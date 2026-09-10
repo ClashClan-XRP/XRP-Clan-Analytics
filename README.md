@@ -3,9 +3,13 @@
 Clash Royale **meta lab**, player scout, clan room, and upgrade planner for [**CryptoClan-$XRP**](https://royaleapi.com/clan/RQ2V9QV9).
 
 **Open the app (share this with clanmates):**  
-[https://clashclan-xrp.github.io/XRP-Clan-Analytics/](https://clashclan-xrp.github.io/XRP-Clan-Analytics/)
+[https://clashclan-xrp.github.io/](https://clashclan-xrp.github.io/)
+
+Project Pages URL: [https://clashclan-xrp.github.io/XRP-Clan-Analytics/](https://clashclan-xrp.github.io/XRP-Clan-Analytics/)
 
 Source: [github.com/ClashClan-XRP/XRP-Clan-Analytics](https://github.com/ClashClan-XRP/XRP-Clan-Analytics)
+
+If GitHub shows a 404 the first time, open the repo **Settings → Pages**, set **Source** to **GitHub Actions** (or **Deploy from a branch** → `main` / `docs`), then wait a minute and refresh.
 
 ## What clanmates can do
 
