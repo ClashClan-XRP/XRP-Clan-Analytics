@@ -9,6 +9,8 @@ dist
 .node_modules.lock
 artifacts
 screenshots
+attachments
+*.heic
 *.log
 .env
 .env.*
