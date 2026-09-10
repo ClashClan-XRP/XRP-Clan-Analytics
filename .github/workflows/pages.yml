@@ -3,57 +3,26 @@ name: Deploy GitHub Pages
 on:
   push:
     branches: [main]
+    paths:
+      - 'docs/**'
+      - '.github/workflows/pages.yml'
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
-  deployments: write
 
 concurrency:
   group: pages
-  cancel-in-progress: false
-
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  cancel-in-progress: true
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Configure Pages
-        id: pages
-        uses: actions/configure-pages@v6
-        with:
-          enablement: true
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v5
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
         with:
           path: docs
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v5
-        with:
-          timeout: 600000
-          reporting_interval: 15000
-
-      - name: Wait before Pages retry
-        if: steps.deployment.outcome == 'failure'
-        run: sleep 30
-
-      - name: Retry deploy
-        if: steps.deployment.outcome == 'failure'
-        id: deployment_retry
-        uses: actions/deploy-pages@v5
-        with:
-          timeout: 600000
-          reporting_interval: 15000
