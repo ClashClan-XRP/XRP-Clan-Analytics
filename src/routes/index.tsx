@@ -12,7 +12,7 @@ import { recommendLadder } from "@/lib/cr/analysis";
 import { APP_NAME, DEFAULT_CLAN_NAME, DEFAULT_CLAN_TAG, DEFAULT_PLAYER_TAG } from "@/lib/cr/defaults";
 import { META_AS_OF, META_DECKS, META_LABEL } from "@/lib/cr/meta";
 import { useAppStore } from "@/lib/store";
-import { formatInt } from "@/lib/utils";
+import { formatFetched, formatInt } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({ component: Home });
 
@@ -86,7 +86,10 @@ function Home() {
                   </div>
                   <div className="text-sm text-muted-foreground">{player.clan?.name ?? DEFAULT_CLAN_NAME}</div>
                 </div>
-                <Badge variant="cyan">{player.source}</Badge>
+                <div className="flex flex-col items-end gap-1">
+                  <Badge variant={player.source === "live" ? "cyan" : "secondary"}>{player.source}</Badge>
+                  <span className="text-[11px] text-muted-foreground">{formatFetched(player.fetchedAt)}</span>
+                </div>
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <Stat label="Trophies" value={formatInt(player.trophies)} />
@@ -111,8 +114,8 @@ function Home() {
       </section>
 
       <section>
-        <div className="mb-4 flex items-end justify-between">
-          <h2 className="font-display text-3xl">This week's ladder</h2>
+        <div className="mb-4 flex flex-col gap-1 md:flex-row md:items-end md:justify-between">
+          <h2 className="font-display text-2xl leading-none md:text-3xl">This week's ladder</h2>
           <Link to="/meta" className="text-sm text-primary hover:underline">
             Full meta lab
           </Link>

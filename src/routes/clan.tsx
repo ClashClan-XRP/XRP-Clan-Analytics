@@ -63,12 +63,10 @@ function ClanPage() {
   }
 
   useEffect(() => {
-    if (search.tag) {
-      setTag(search.tag);
-      void load(search.tag);
-    } else if (!clan) {
-      void load(DEFAULT_CLAN_TAG);
-    }
+    const next = search.tag || clan?.tag || DEFAULT_CLAN_TAG;
+    setTag(next);
+    void load(next);
+    // Fresh roster on every visit to this screen.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search.tag]);
 

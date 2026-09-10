@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { DeckStrip } from "@/components/card-tile";
 import { DeckFitCard, ReasonList } from "@/components/deck-fit";
@@ -12,7 +13,7 @@ import { currentDeckAnalysis, recommendLadder } from "@/lib/cr/analysis";
 import { CARDS_BY_KEY } from "@/lib/cr/catalog";
 import { DEFAULT_CLAN_TAG, DEFAULT_PLAYER_TAG } from "@/lib/cr/defaults";
 import { useAppStore } from "@/lib/store";
-import { formatInt, formatPct } from "@/lib/utils";
+import { formatFetched, formatInt, formatPct } from "@/lib/utils";
 
 type Search = { tag?: string };
 
@@ -52,18 +53,12 @@ function PlayerPage() {
   }
 
   useEffect(() => {
-    if (search.tag) {
-      setTag(search.tag);
-      void scout(search.tag);
-    }
+    const next = search.tag || player?.tag || DEFAULT_PLAYER_TAG;
+    setTag(next);
+    void scout(next);
+    // Fresh lookup whenever this screen is opened or the tag in the URL changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search.tag]);
-
-  useEffect(() => {
-    if (!search.tag && player?.tag && tag === DEFAULT_PLAYER_TAG && player.tag !== DEFAULT_PLAYER_TAG) {
-      setTag(player.tag);
-    }
-  }, [player?.tag, search.tag, tag]);
 
   const p = player;
   const ladder = useMemo(() => (p ? recommendLadder(p) : []), [p]);
@@ -88,9 +83,20 @@ function PlayerPage() {
           }}
         >
           <Input value={tag} onChange={(e) => setTag(e.target.value)} placeholder="#PLAYER" className="sm:w-56" />
-          <Button type="submit" disabled={busy}>
-            {busy ? "Scouting…" : "Scout"}
-          </Button>
+          <div className="flex gap-2">
+            <Button type="submit" disabled={busy} className="flex-1 sm:flex-none">
+              {busy ? "Scouting…" : "Scout"}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={busy}
+              aria-label="Refresh live data"
+              onClick={() => void scout(tag)}
+            >
+              <RefreshCw className={busy ? "animate-spin" : undefined} />
+            </Button>
+          </div>
         </form>
       </header>
 
@@ -118,7 +124,10 @@ function PlayerPage() {
                       {p.clan ? ` · ${p.clan.name}` : ""}
                     </div>
                   </div>
-                  <Badge variant="cyan">{p.source}</Badge>
+                  <div className="flex flex-col items-end gap-1">
+                    <Badge variant={p.source === "live" ? "cyan" : "secondary"}>{p.source}</Badge>
+                    <span className="text-[11px] text-muted-foreground">{formatFetched(p.fetchedAt)}</span>
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                   <Stat label="Trophies" value={formatInt(p.trophies)} />
@@ -230,6 +239,8 @@ function PlayerPage() {
 
           {battlesNote ? <p className="text-xs text-muted-foreground">{battlesNote}</p> : null}
         </>
+      ) : busy ? (
+        <p className="text-sm text-muted-foreground">Loading live collection…</p>
       ) : null}
     </div>
   );

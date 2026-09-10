@@ -1,8 +1,9 @@
 import { useEffect } from "react";
 import { bootstrapDefaults } from "@/lib/cr/api";
+import { DEFAULT_PLAYER_TAG } from "@/lib/cr/defaults";
 import { useAppStore } from "@/lib/store";
 
-/** Load CryptoClan-$XRP and a random member once per session. */
+/** Fresh clan + player lookup on every visit (not a cached snapshot). */
 export function useBootstrap() {
   const apiKey = useAppStore((s) => s.apiKey);
   const bootstrapped = useAppStore((s) => s.bootstrapped);
@@ -15,18 +16,17 @@ export function useBootstrap() {
     if (bootstrapped) return;
     let cancelled = false;
     void (async () => {
-      const res = await bootstrapDefaults({ data: { apiKey: apiKey || undefined } });
+      const recents = useAppStore.getState().recents;
+      const lastPlayer = recents.find((r) => r.kind === "player")?.tag ?? DEFAULT_PLAYER_TAG;
+      const res = await bootstrapDefaults({
+        data: { apiKey: apiKey || undefined, playerTag: lastPlayer },
+      });
       if (cancelled) return;
       if (res.ok) {
-        const state = useAppStore.getState();
-        if (!state.clan) {
-          setClan(res.data.clan);
-          remember({ kind: "clan", tag: res.data.clan.tag, name: res.data.clan.name });
-        }
-        if (!state.player) {
-          setPlayer(res.data.player);
-          remember({ kind: "player", tag: res.data.player.tag, name: res.data.player.name });
-        }
+        setClan(res.data.clan);
+        setPlayer(res.data.player);
+        remember({ kind: "clan", tag: res.data.clan.tag, name: res.data.clan.name });
+        remember({ kind: "player", tag: res.data.player.tag, name: res.data.player.name });
       }
       setBootstrapped(true);
     })();

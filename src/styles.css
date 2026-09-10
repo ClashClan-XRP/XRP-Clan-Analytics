@@ -1,6 +1,10 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Pages SPA uses vite root `pages/`; scan the real UI so utilities ship. */
+@source "./**/*.{ts,tsx}";
+@source "../pages/**/*.{html,tsx}";
+
 @theme {
   --font-sans: "Figtree", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Teko", "Figtree", sans-serif;

@@ -1,5 +1,5 @@
 import { CARDS, CARDS_BY_ID, CARDS_BY_NAME, type Card } from "./catalog";
-import { DEFAULT_API_TOKEN, DEFAULT_CLAN_TAG } from "./defaults";
+import { DEFAULT_API_TOKEN, DEFAULT_CLAN_TAG, DEFAULT_PLAYER_TAG } from "./defaults";
 import { DEMO_CLAN, DEMO_PLAYER, DEMO_PROFILES, isDemoTag, syntheticBattles } from "./demo";
 import type { Battle, ClanProfile, LookupResult, OwnedCard, PlayerProfile } from "./types";
 import { encodeTag, formatTag } from "../utils";
@@ -216,9 +216,11 @@ function mapBattles(raw: OfficialBattle[], playerTag: string): Battle[] {
 
 async function crFetch(path: string, apiKey: string): Promise<{ ok: true; json: unknown } | { ok: false; status: number; body: string }> {
   const res = await fetch(`${PROXY}${path}`, {
+    cache: "no-store",
     headers: {
       Authorization: `Bearer ${apiKey}`,
       Accept: "application/json",
+      "Cache-Control": "no-cache",
     },
   });
   const body = await res.text();
@@ -331,21 +333,33 @@ export async function lookupPairIntel(input: {
 }
 
 export async function bootstrapDefaults(input: {
-  data: { apiKey?: string };
+  data: { apiKey?: string; playerTag?: string };
 }): Promise<LookupResult<{ clan: ClanProfile; player: PlayerProfile }>> {
   const key = token(input.data.apiKey);
   const clan = await loadClan(DEFAULT_CLAN_TAG, key);
+  const preferred = input.data.playerTag?.trim() || DEFAULT_PLAYER_TAG;
   if (!clan.ok) {
-    const members = DEMO_CLAN.members;
-    const pick = members[Math.floor(Math.random() * members.length)] ?? DEMO_CLAN.members[0]!;
-    return { ok: true, data: { clan: DEMO_CLAN, player: fallbackPlayer(pick.tag) ?? DEMO_PLAYER } };
+    const player = await loadPlayer(preferred, key);
+    return {
+      ok: true,
+      data: {
+        clan: DEMO_CLAN,
+        player: player.ok ? player.data : (fallbackPlayer(preferred) ?? DEMO_PLAYER),
+      },
+    };
   }
-  const members = clan.data.members;
-  const pick = members[Math.floor(Math.random() * Math.max(1, members.length))];
+  const player = await loadPlayer(preferred, key);
+  if (player.ok) return { ok: true, data: { clan: clan.data, player: player.data } };
+  const pick = clan.data.members[0];
   if (!pick) return { ok: true, data: { clan: clan.data, player: DEMO_PLAYER } };
-  const player = await loadPlayer(pick.tag, key);
-  if (!player.ok) return { ok: true, data: { clan: clan.data, player: fallbackPlayer(pick.tag) ?? DEMO_PLAYER } };
-  return { ok: true, data: { clan: clan.data, player: player.data } };
+  const fallback = await loadPlayer(pick.tag, key);
+  return {
+    ok: true,
+    data: {
+      clan: clan.data,
+      player: fallback.ok ? fallback.data : (fallbackPlayer(pick.tag) ?? DEMO_PLAYER),
+    },
+  };
 }
 
 export async function askCoach(_input: {

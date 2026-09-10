@@ -20,14 +20,14 @@ export function Shell({ children }: { children: React.ReactNode }) {
   useBootstrap();
 
   return (
-    <div className="flex min-h-dvh flex-col md:flex-row">
+    <div className="flex min-h-dvh flex-col bg-background md:flex-row">
       <aside className="sticky top-0 hidden h-dvh w-56 shrink-0 flex-col border-r border-border bg-card/60 md:flex">
         <div className="px-5 pb-6 pt-7">
           <Link to="/" className="block">
             <div className="font-display text-3xl leading-none tracking-wide text-foreground">XRP CLAN</div>
             <div className="font-display text-2xl leading-none tracking-wide text-primary">ANALYTICS</div>
           </Link>
-          <p className="mt-2 text-xs text-muted-foreground">Season 87 snapshot</p>
+          <p className="mt-2 text-xs text-muted-foreground">Season 87 · live lookup</p>
         </div>
         <nav className="flex flex-1 flex-col gap-1 px-3">
           {NAV.map((item) => {
@@ -51,7 +51,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center justify-between gap-3 border-b border-border px-4 py-3 md:px-8">
+        <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-border bg-background/95 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur-sm md:px-8">
           <Link to="/" className="md:hidden">
             <span className="font-display text-2xl leading-none text-foreground">XRP CLAN</span>
             <span className="font-display text-2xl leading-none text-primary"> ANALYTICS</span>
@@ -68,11 +68,13 @@ export function Shell({ children }: { children: React.ReactNode }) {
             <span className="hidden sm:inline">Live API</span>
           </button>
         </header>
-        <main className="flex-1 px-4 pb-24 pt-6 md:px-8 md:pb-10">{children}</main>
+        <main className="flex-1 px-4 pb-[calc(6.25rem+env(safe-area-inset-bottom))] pt-6 md:px-8 md:pb-10">
+          {children}
+        </main>
       </div>
 
-      <nav className="fixed inset-x-0 bottom-0 z-40 flex border-t border-border bg-card/95 md:hidden">
-        {NAV.slice(0, 5).map((item) => {
+      <nav className="fixed inset-x-0 bottom-0 z-40 flex border-t border-border bg-card/95 pb-[env(safe-area-inset-bottom)] md:hidden">
+        {NAV.map((item) => {
           const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
           const Icon = item.icon;
           return (
@@ -80,7 +82,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
               key={item.to}
               to={item.to}
               className={cn(
-                "flex h-14 flex-1 flex-col items-center justify-center gap-1 text-[11px]",
+                "flex h-14 min-w-0 flex-1 flex-col items-center justify-center gap-1 text-[10px] font-medium",
                 active ? "text-primary" : "text-muted-foreground",
               )}
             >

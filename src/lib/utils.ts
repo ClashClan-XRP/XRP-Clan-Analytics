@@ -26,3 +26,14 @@ export function formatInt(n: number): string {
 export function clamp(n: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, n));
 }
+
+export function formatFetched(iso?: string): string {
+  if (!iso) return "Just now";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "Just now";
+  const delta = Date.now() - d.getTime();
+  if (delta < 15_000) return "Just now";
+  if (delta < 60_000) return `${Math.floor(delta / 1000)}s ago`;
+  if (delta < 3_600_000) return `${Math.floor(delta / 60_000)}m ago`;
+  return d.toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+}
