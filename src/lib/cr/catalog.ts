@@ -205,3 +205,25 @@ export function deckUrl(keys: string[]): string {
   return `https://royaleapi.com/decks/stats/${keys.join(",")}`;
 }
 
+/** Clash Royale in-game copy-deck deep link (RoyaleAPI / official copyDeck format). */
+export function copyDeckDeepLink(
+  keys: string[],
+  opts?: { tower?: string; label?: string },
+): string {
+  const ids = keys
+    .map((k) => CARDS_BY_KEY[k]?.id)
+    .filter((id): id is number => typeof id === "number")
+    .slice(0, 8);
+  const parts = [`deck=${ids.join(";")}`];
+  if (opts?.label) parts.push(`l=${encodeURIComponent(opts.label)}`);
+  const tt = opts?.tower ? CARDS_BY_KEY[opts.tower]?.id : undefined;
+  if (tt) parts.push(`tt=${tt}`);
+  return `clashroyale://copyDeck?${parts.join("&")}`;
+}
+
+/** HTTPS wrapper that opens Clash Royale (or the store) — same pattern as RoyaleAPI. */
+export function copyDeckUrl(keys: string[], opts?: { tower?: string; label?: string }): string {
+  return `https://link.clashroyale.com/en/?${copyDeckDeepLink(keys, opts)}`;
+}
+
+

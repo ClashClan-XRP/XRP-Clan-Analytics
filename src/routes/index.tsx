@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { useState } from "react";
 import { DeckStrip } from "@/components/card-tile";
+import { CopyDeckButton } from "@/components/copy-deck-button";
 import { PlayerName } from "@/components/player-name";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -87,7 +88,7 @@ function Home() {
                   <div className="text-sm text-muted-foreground">{player.clan?.name ?? DEFAULT_CLAN_NAME}</div>
                 </div>
                 <div className="flex flex-col items-end gap-1">
-                  <Badge variant={player.source === "live" ? "cyan" : "secondary"}>{player.source}</Badge>
+                  <Badge variant={player.source === "live" ? "cyan" : "default"}>{player.source}</Badge>
                   <span className="text-[11px] text-muted-foreground">{formatFetched(player.fetchedAt)}</span>
                 </div>
               </div>
@@ -97,6 +98,7 @@ function Home() {
                 <Stat label="Wins" value={formatInt(player.wins)} />
               </div>
               <DeckStrip cards={player.currentDeck} evo={player.currentEvo} />
+              <CopyDeckButton cards={player.currentDeck} tower={player.towerTroop} label={`${player.name} current`} />
               <p className="text-sm text-muted-foreground">
                 Best current fit: <span className="text-foreground">{fits[0]?.deck.name}</span> · score {fits[0]?.score}
               </p>
@@ -135,6 +137,7 @@ function Home() {
                   </div>
                 </div>
                 <DeckStrip cards={d.cards} evo={d.evo} size="sm" />
+                <CopyDeckButton cards={d.cards} label={d.name} />
                 <p className="text-sm text-muted-foreground">{d.notes}</p>
               </CardContent>
             </Card>
@@ -154,16 +157,16 @@ function Home() {
         <Link to="/clan" className="block">
           <Card className="h-full transition-colors duration-150 hover:border-primary/40">
             <CardContent>
-              <div className="font-display text-2xl">2v2 pairings</div>
-              <p className="mt-1 text-sm text-muted-foreground">Toggle Pair on two clanmates for strategy-split lists and openings.</p>
+              <div className="font-display text-2xl">Clan wars & 2v2</div>
+              <p className="mt-1 text-sm text-muted-foreground">River race status, four war decks per member, and pair-up plans.</p>
             </CardContent>
           </Card>
         </Link>
-        <Link to="/cards" className="block">
+        <Link to="/coach" className="block">
           <Card className="h-full transition-colors duration-150 hover:border-primary/40">
             <CardContent>
-              <div className="font-display text-2xl">Card intel</div>
-              <p className="mt-1 text-sm text-muted-foreground">Usage, win rate, evolutions, and which meta lists a card belongs on.</p>
+              <div className="font-display text-2xl">Replay coach</div>
+              <p className="mt-1 text-sm text-muted-foreground">Timestamped deviations, impact on the result, and pro clips of the line.</p>
             </CardContent>
           </Card>
         </Link>

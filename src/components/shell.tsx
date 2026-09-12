@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutGrid, Layers3, Library, Settings2, Sparkles, Swords, Users } from "lucide-react";
+import { GraduationCap, LayoutGrid, Layers3, Library, Settings2, Sparkles, Swords, Users } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useBootstrap } from "@/lib/use-bootstrap";
@@ -10,6 +10,7 @@ const NAV = [
   { to: "/meta", label: "Meta", icon: Layers3 },
   { to: "/player", label: "Scout", icon: Swords },
   { to: "/clan", label: "Clan", icon: Users },
+  { to: "/coach", label: "Coach", icon: GraduationCap },
   { to: "/upgrades", label: "Upgrades", icon: Sparkles },
   { to: "/cards", label: "Cards", icon: Library },
 ] as const;
@@ -82,7 +83,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
               key={item.to}
               to={item.to}
               className={cn(
-                "flex h-14 min-w-0 flex-1 flex-col items-center justify-center gap-1 text-[10px] font-medium",
+                "flex h-14 min-w-0 flex-1 flex-col items-center justify-center gap-1 text-[9px] font-medium sm:text-[10px]",
                 active ? "text-primary" : "text-muted-foreground",
               )}
             >

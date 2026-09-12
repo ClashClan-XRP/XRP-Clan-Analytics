@@ -1,7 +1,25 @@
 import { CARDS, CARDS_BY_ID, CARDS_BY_NAME, type Card } from "./catalog";
 import { DEFAULT_API_TOKEN, DEFAULT_CLAN_TAG, DEFAULT_PLAYER_TAG } from "./defaults";
-import { DEMO_CLAN, DEMO_PLAYER, DEMO_PROFILES, isDemoTag, syntheticBattles } from "./demo";
-import type { Battle, ClanProfile, LookupResult, OwnedCard, PlayerProfile } from "./types";
+import {
+  DEMO_CLAN,
+  DEMO_PLAYER,
+  DEMO_PROFILES,
+  DEMO_RIVER_LOG,
+  DEMO_RIVER_RACE,
+  isDemoTag,
+  syntheticBattles,
+} from "./demo";
+import type {
+  Battle,
+  ClanProfile,
+  LookupResult,
+  OwnedCard,
+  PlayerProfile,
+  RiverClanStanding,
+  RiverLogEntry,
+  RiverParticipant,
+  RiverRace,
+} from "./types";
 import { encodeTag, formatTag } from "../utils";
 
 const PROXY = "https://proxy.royaleapi.dev/v1";
@@ -58,9 +76,50 @@ type OfficialClan = {
 
 type OfficialBattle = {
   type?: string;
+  battleTime?: string;
+  arena?: { name?: string };
   gameMode?: { name?: string };
   team?: Array<{ tag?: string; name?: string; crowns?: number; cards?: OfficialCard[] }>;
   opponent?: Array<{ tag?: string; name?: string; crowns?: number; cards?: OfficialCard[] }>;
+};
+
+type OfficialParticipant = {
+  tag?: string;
+  name?: string;
+  fame?: number;
+  repairPoints?: number;
+  boatAttacks?: number;
+  decksUsed?: number;
+  decksUsedToday?: number;
+};
+
+type OfficialRiverClan = {
+  tag?: string;
+  name?: string;
+  fame?: number;
+  repairPoints?: number;
+  clanScore?: number;
+  participants?: OfficialParticipant[];
+  finish?: number;
+  periodPoints?: number;
+};
+
+type OfficialRiverRace = {
+  state?: string;
+  periodType?: string;
+  periodIndex?: number;
+  sectionIndex?: number;
+  clan?: OfficialRiverClan;
+  clans?: OfficialRiverClan[];
+};
+
+type OfficialRiverLog = {
+  items?: Array<{
+    seasonId?: number;
+    sectionIndex?: number;
+    createdDate?: string;
+    standings?: Array<{ rank?: number; trophyChange?: number; clan?: OfficialRiverClan }>;
+  }>;
 };
 
 function slugName(name: string): string {
@@ -192,6 +251,13 @@ function mapClan(c: OfficialClan): ClanProfile {
   };
 }
 
+function parseCrTime(raw?: string): string | undefined {
+  if (!raw) return undefined;
+  const m = raw.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})/);
+  if (!m) return raw;
+  return `${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}.000Z`;
+}
+
 function mapBattles(raw: OfficialBattle[], playerTag: string): Battle[] {
   const tag = formatTag(playerTag);
   return raw.slice(0, 25).map((b) => {
@@ -207,11 +273,67 @@ function mapBattles(raw: OfficialBattle[], playerTag: string): Battle[] {
       crowns: myCrowns,
       opponentCrowns: theirCrowns,
       opponentName: opp?.name ?? "Opponent",
+      opponentTag: opp?.tag ? formatTag(opp.tag) : undefined,
       opponentDeck: (opp?.cards ?? []).map(resolveCard).filter((c): c is Card => Boolean(c)).map((c) => c.key),
       deck: (me?.cards ?? []).map(resolveCard).filter((c): c is Card => Boolean(c)).map((c) => c.key),
       gameMode: mode,
+      battleTime: parseCrTime(b.battleTime),
+      arena: b.arena?.name,
     };
   });
+}
+
+function mapParticipant(p: OfficialParticipant): RiverParticipant {
+  return {
+    tag: formatTag(p.tag ?? ""),
+    name: p.name ?? "Member",
+    fame: p.fame ?? 0,
+    repairPoints: p.repairPoints ?? 0,
+    boatAttacks: p.boatAttacks ?? 0,
+    decksUsed: p.decksUsed ?? 0,
+    decksUsedToday: p.decksUsedToday ?? 0,
+  };
+}
+
+function mapRiverClan(c: OfficialRiverClan): RiverClanStanding {
+  return {
+    tag: formatTag(c.tag ?? ""),
+    name: c.name ?? "Clan",
+    fame: c.fame ?? c.periodPoints ?? 0,
+    repairPoints: c.repairPoints ?? 0,
+    participants: (c.participants ?? []).map(mapParticipant),
+    finish: c.finish,
+  };
+}
+
+function mapRiverRace(raw: OfficialRiverRace, fallbackTag: string): RiverRace {
+  const clan = raw.clan ? mapRiverClan(raw.clan) : mapRiverClan({ tag: fallbackTag, name: "Clan" });
+  const others = (raw.clans ?? []).map(mapRiverClan);
+  const clans = others.some((c) => c.tag === clan.tag) ? others : [clan, ...others];
+  return {
+    state: raw.state ?? "unknown",
+    periodType: raw.periodType ?? "warDay",
+    periodIndex: raw.periodIndex ?? 0,
+    sectionIndex: raw.sectionIndex ?? 0,
+    clan,
+    clans,
+    source: "live",
+    fetchedAt: new Date().toISOString(),
+  };
+}
+
+function mapRiverLog(raw: OfficialRiverLog | OfficialRiverLog["items"]): RiverLogEntry[] {
+  const items = Array.isArray(raw) ? raw : (raw?.items ?? []);
+  return items.slice(0, 6).map((e) => ({
+    seasonId: e.seasonId ?? 0,
+    sectionIndex: e.sectionIndex ?? 0,
+    createdDate: e.createdDate ?? "",
+    standings: (e.standings ?? []).map((s) => ({
+      rank: s.rank ?? 0,
+      trophyChange: s.trophyChange ?? 0,
+      clan: s.clan ? mapRiverClan(s.clan) : { tag: "", name: "Clan", fame: 0, repairPoints: 0, participants: [] },
+    })),
+  }));
 }
 
 async function crFetch(path: string, apiKey: string): Promise<{ ok: true; json: unknown } | { ok: false; status: number; body: string }> {
@@ -362,11 +484,43 @@ export async function bootstrapDefaults(input: {
   };
 }
 
+export async function lookupRiverRace(input: {
+  data: { tag: string; apiKey?: string };
+}): Promise<LookupResult<RiverRace>> {
+  const key = token(input.data.apiKey);
+  const formatted = formatTag(input.data.tag);
+  if (!formatted || formatted.length < 4) return { ok: false, error: "Enter a clan tag." };
+  const got = await crFetch(`/clans/${encodeTag(formatted)}/currentriverrace`, key);
+  if (!got.ok) {
+    if (formatted === DEFAULT_CLAN_TAG || formatted === DEMO_CLAN.tag) {
+      return { ok: true, data: { ...DEMO_RIVER_RACE, fetchedAt: new Date().toISOString() } };
+    }
+    return { ok: false, error: `River race lookup failed (${got.status}).`, hint: keyHint(got.status) };
+  }
+  return { ok: true, data: mapRiverRace(got.json as OfficialRiverRace, formatted) };
+}
+
+export async function lookupRiverLog(input: {
+  data: { tag: string; apiKey?: string };
+}): Promise<LookupResult<RiverLogEntry[]>> {
+  const key = token(input.data.apiKey);
+  const formatted = formatTag(input.data.tag);
+  if (!formatted || formatted.length < 4) return { ok: false, error: "Enter a clan tag." };
+  const got = await crFetch(`/clans/${encodeTag(formatted)}/riverracelog?limit=5`, key);
+  if (!got.ok) {
+    if (formatted === DEFAULT_CLAN_TAG || formatted === DEMO_CLAN.tag) {
+      return { ok: true, data: DEMO_RIVER_LOG };
+    }
+    return { ok: true, data: [] };
+  }
+  return { ok: true, data: mapRiverLog(got.json as OfficialRiverLog) };
+}
+
 export async function askCoach(_input: {
   data: { prompt: string };
 }): Promise<{ ok: true; text: string } | { ok: false; error: string }> {
   return {
     ok: false,
-    error: "Coach runs on the live app. On GitHub Pages, use Scout, Meta, and 2v2 pairings.",
+    error: "Open Coach and pick a replay. Analysis runs from the battle log on this device.",
   };
 }

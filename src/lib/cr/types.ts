@@ -61,9 +61,12 @@ export type Battle = {
   crowns: number;
   opponentCrowns: number;
   opponentName: string;
+  opponentTag?: string;
   opponentDeck: string[];
   deck: string[];
   gameMode: string;
+  battleTime?: string;
+  arena?: string;
 };
 
 export type MetaDeck = {
@@ -127,3 +130,78 @@ export type UpgradePick = {
 export type LookupResult<T> =
   | { ok: true; data: T }
   | { ok: false; error: string; hint?: string };
+
+export type RiverParticipant = {
+  tag: string;
+  name: string;
+  fame: number;
+  repairPoints: number;
+  boatAttacks: number;
+  decksUsed: number;
+  decksUsedToday: number;
+};
+
+export type RiverClanStanding = {
+  tag: string;
+  name: string;
+  fame: number;
+  repairPoints: number;
+  participants: RiverParticipant[];
+  finish?: number;
+  trophyChange?: number;
+};
+
+export type RiverRace = {
+  state: string;
+  periodType: string;
+  periodIndex: number;
+  sectionIndex: number;
+  clan: RiverClanStanding;
+  clans: RiverClanStanding[];
+  source: "live" | "demo";
+  fetchedAt: string;
+};
+
+export type RiverLogEntry = {
+  seasonId: number;
+  sectionIndex: number;
+  createdDate: string;
+  standings: Array<{ rank: number; trophyChange: number; clan: RiverClanStanding }>;
+};
+
+export type MatchPoint = {
+  id: string;
+  clock: string;
+  elapsed: string;
+  phase: "single" | "double" | "overtime";
+  title: string;
+  observed: string;
+  optimal: string;
+  deviation: boolean;
+  impact: "positive" | "negative";
+  impactScore: number;
+  impactLabel: string;
+};
+
+export type CoachClip = {
+  id: string;
+  title: string;
+  creator: string;
+  youtubeId: string;
+  start?: number;
+  technique: string;
+  why: string;
+};
+
+export type CoachReport = {
+  opponentArchetype: string;
+  selfArchetype: string;
+  matchupScore: number;
+  optimalStrategy: string[];
+  points: MatchPoint[];
+  overallImpact: number;
+  overallLabel: string;
+  resultExplained: string;
+  coa: string[];
+  clips: CoachClip[];
+};

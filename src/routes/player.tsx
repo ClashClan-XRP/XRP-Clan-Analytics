@@ -2,13 +2,14 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { DeckStrip } from "@/components/card-tile";
+import { CopyDeckButton } from "@/components/copy-deck-button";
 import { DeckFitCard, ReasonList } from "@/components/deck-fit";
 import { PlayerName } from "@/components/player-name";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { lookupPlayer, askCoach } from "@/lib/cr/api";
+import { lookupPlayer } from "@/lib/cr/api";
 import { currentDeckAnalysis, recommendLadder } from "@/lib/cr/analysis";
 import { CARDS_BY_KEY } from "@/lib/cr/catalog";
 import { DEFAULT_CLAN_TAG, DEFAULT_PLAYER_TAG } from "@/lib/cr/defaults";
@@ -34,8 +35,6 @@ function PlayerPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hint, setHint] = useState<string | null>(null);
-  const [coach, setCoach] = useState<string | null>(null);
-  const [coachBusy, setCoachBusy] = useState(false);
 
   async function scout(nextTag: string) {
     setBusy(true);
@@ -125,7 +124,7 @@ function PlayerPage() {
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-1">
-                    <Badge variant={p.source === "live" ? "cyan" : "secondary"}>{p.source}</Badge>
+                    <Badge variant={p.source === "live" ? "cyan" : "default"}>{p.source}</Badge>
                     <span className="text-[11px] text-muted-foreground">{formatFetched(p.fetchedAt)}</span>
                   </div>
                 </div>
@@ -163,6 +162,7 @@ function PlayerPage() {
                 </CardHeader>
                 <CardContent className="flex flex-col gap-4">
                   <DeckStrip cards={p.currentDeck} evo={p.currentEvo} size="lg" />
+                  <CopyDeckButton cards={p.currentDeck} tower={p.towerTroop} label={`${p.name} current`} />
                   <p className="text-sm text-muted-foreground">
                     {current.deck.elixir.toFixed(1)} average elixir
                     {p.currentHero ? ` · ${CARDS_BY_KEY[p.currentHero]?.name}` : ""}
@@ -192,29 +192,12 @@ function PlayerPage() {
           <section>
             <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
               <h2 className="font-display text-3xl">Ladder recommendations</h2>
-              <Button
-                variant="secondary"
-                disabled={coachBusy}
-                onClick={async () => {
-                  setCoachBusy(true);
-                  const top = ladder.slice(0, 4).map((f) => `${f.deck.name} (fit ${f.score})`).join(", ");
-                  const res = await askCoach({
-                    data: {
-                      prompt: `Player ${p.name}, king ${p.expLevel}, trophies ${p.trophies}, heroes ${p.heroes.join("/") || "none"}. Best engine fits: ${top}. Current deck: ${p.currentDeck.join(", ")}. Give a short plan: 1 ladder deck to main, 1 backup, 3 upgrade targets, and a 2v2 partner style. No preamble.`,
-                    },
-                  });
-                  setCoachBusy(false);
-                  setCoach(res.ok ? res.text : res.error);
-                }}
-              >
-                {coachBusy ? "Asking coach…" : "Ask coach"}
+              <Button asChild variant="secondary">
+                <Link to="/coach" search={{ tag: p.tag }}>
+                  Replay coach
+                </Link>
               </Button>
             </div>
-            {coach ? (
-              <Card className="mb-4">
-                <CardContent className="whitespace-pre-wrap text-sm text-muted-foreground">{coach}</CardContent>
-              </Card>
-            ) : null}
             <div className="grid gap-4 lg:grid-cols-2">
               {ladder.slice(0, 4).map((fit) => (
                 <DeckFitCard key={fit.deck.id} fit={fit} />

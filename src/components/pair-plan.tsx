@@ -1,4 +1,5 @@
 import { CardTile, DeckStrip } from "@/components/card-tile";
+import { CopyDeckButton } from "@/components/copy-deck-button";
 import { PlayerName } from "@/components/player-name";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -38,6 +39,7 @@ function PlayerPlan({ plan }: { plan: PlayerDeckPlan }) {
         evo={plan.cards.filter((c) => c.evo).map((c) => c.key)}
         levels={Object.fromEntries(plan.cards.filter((c) => typeof c.level === "number").map((c) => [c.key, c.level!]))}
       />
+      <CopyDeckButton cards={plan.cards.map((c) => c.key)} label={plan.deckName} />
       <ul className="grid gap-2 sm:grid-cols-2">
         {plan.cards.map((c) => (
           <li key={c.key} className="flex items-center gap-2">

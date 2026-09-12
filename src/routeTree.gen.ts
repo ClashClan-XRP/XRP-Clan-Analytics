@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CardsRouteImport } from './routes/cards'
 import { Route as ClanRouteImport } from './routes/clan'
+import { Route as CoachRouteImport } from './routes/coach'
 import { Route as MetaRouteImport } from './routes/meta'
 import { Route as PlayerRouteImport } from './routes/player'
 import { Route as UpgradesRouteImport } from './routes/upgrades'
@@ -29,6 +30,11 @@ const CardsRoute = CardsRouteImport.update({
 const ClanRoute = ClanRouteImport.update({
   id: '/clan',
   path: '/clan',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CoachRoute = CoachRouteImport.update({
+  id: '/coach',
+  path: '/coach',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MetaRoute = MetaRouteImport.update({
@@ -51,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/cards': typeof CardsRoute
   '/clan': typeof ClanRoute
+  '/coach': typeof CoachRoute
   '/meta': typeof MetaRoute
   '/player': typeof PlayerRoute
   '/upgrades': typeof UpgradesRoute
@@ -59,6 +66,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cards': typeof CardsRoute
   '/clan': typeof ClanRoute
+  '/coach': typeof CoachRoute
   '/meta': typeof MetaRoute
   '/player': typeof PlayerRoute
   '/upgrades': typeof UpgradesRoute
@@ -68,22 +76,33 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/cards': typeof CardsRoute
   '/clan': typeof ClanRoute
+  '/coach': typeof CoachRoute
   '/meta': typeof MetaRoute
   '/player': typeof PlayerRoute
   '/upgrades': typeof UpgradesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/cards' | '/clan' | '/meta' | '/player' | '/upgrades'
+  fullPaths:
+    '/' | '/cards' | '/clan' | '/coach' | '/meta' | '/player' | '/upgrades'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/cards' | '/clan' | '/meta' | '/player' | '/upgrades'
-  id: '__root__' | '/' | '/cards' | '/clan' | '/meta' | '/player' | '/upgrades'
+  to: '/' | '/cards' | '/clan' | '/coach' | '/meta' | '/player' | '/upgrades'
+  id:
+    | '__root__'
+    | '/'
+    | '/cards'
+    | '/clan'
+    | '/coach'
+    | '/meta'
+    | '/player'
+    | '/upgrades'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CardsRoute: typeof CardsRoute
   ClanRoute: typeof ClanRoute
+  CoachRoute: typeof CoachRoute
   MetaRoute: typeof MetaRoute
   PlayerRoute: typeof PlayerRoute
   UpgradesRoute: typeof UpgradesRoute
@@ -110,6 +129,13 @@ declare module '@tanstack/react-router' {
       path: '/clan'
       fullPath: '/clan'
       preLoaderRoute: typeof ClanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/coach': {
+      id: '/coach'
+      path: '/coach'
+      fullPath: '/coach'
+      preLoaderRoute: typeof CoachRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/meta': {
@@ -140,6 +166,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CardsRoute: CardsRoute,
   ClanRoute: ClanRoute,
+  CoachRoute: CoachRoute,
   MetaRoute: MetaRoute,
   PlayerRoute: PlayerRoute,
   UpgradesRoute: UpgradesRoute,

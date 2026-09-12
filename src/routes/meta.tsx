@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { DeckStrip } from "@/components/card-tile";
+import { CopyDeckButton } from "@/components/copy-deck-button";
 import { ReasonList } from "@/components/deck-fit";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -80,6 +81,9 @@ function MetaPage() {
                     </div>
                   </div>
                   <DeckStrip cards={d.cards} evo={d.evo} />
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <CopyDeckButton cards={d.cards} label={d.name} />
+                  </div>
                   <a
                     href={deckUrl(d.cards)}
                     target="_blank"

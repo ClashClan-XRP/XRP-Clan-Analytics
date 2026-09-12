@@ -1,6 +1,6 @@
 import { PLAYABLE, HEROES } from "./catalog";
 import { DEFAULT_CLAN_NAME, DEFAULT_CLAN_TAG, DEFAULT_PLAYER_TAG } from "./defaults";
-import type { Battle, ClanProfile, OwnedCard, PlayerProfile } from "./types";
+import type { Battle, ClanProfile, OwnedCard, PlayerProfile, RiverLogEntry, RiverRace } from "./types";
 
 const NOW = "2026-09-10T04:00:00.000Z";
 
@@ -272,15 +272,18 @@ export function syntheticBattles(player: PlayerProfile): Battle[] {
     const deck = rotate
       ? [...player.currentDeck.slice(1), player.currentDeck[0] ?? "knight"]
       : player.currentDeck;
+    const t = new Date(Date.parse(NOW) - i * 36 * 60 * 1000);
     out.push({
       type: duo ? "trail" : "PvP",
       win: ((seed >> (i % 16)) & 1) === (i % 3 === 0 ? 0 : 1),
       crowns: 1 + (i % 3 === 0 ? 1 : 0),
       opponentCrowns: i % 4 === 2 ? 2 : 0,
       opponentName: opp[0],
+      opponentTag: `#${(800000 + i).toString(16).toUpperCase()}`,
       opponentDeck: [...opp[1]],
       deck: deck.filter(Boolean).slice(0, 8),
       gameMode: duo ? "TeamVsTeam" : "Ladder",
+      battleTime: t.toISOString(),
     });
   }
   return out;
@@ -292,3 +295,55 @@ export function isDemoTag(tag: string): boolean {
   const t = tag.trim().toUpperCase().replace(/^#/, "");
   return t === "DEMO" || t === "MIZUKI" || t === "8L9R8UL8";
 }
+
+export const DEMO_RIVER_RACE: RiverRace = {
+  state: "full",
+  periodType: "warDay",
+  periodIndex: 3,
+  sectionIndex: 2,
+  clan: {
+    tag: DEMO_CLAN.tag,
+    name: DEMO_CLAN.name,
+    fame: 12480,
+    repairPoints: 0,
+    participants: DEMO_CLAN.members.map((m, i) => ({
+      tag: m.tag,
+      name: m.name,
+      fame: Math.max(0, 2400 - i * 70 + (m.trophies % 200)),
+      repairPoints: 0,
+      boatAttacks: i % 7 === 0 ? 1 : 0,
+      decksUsed: Math.min(16, 8 + ((m.donations + i) % 9)),
+      decksUsedToday: i % 4 === 0 ? 0 : 1 + (i % 4),
+    })),
+  },
+  clans: [
+    {
+      tag: DEMO_CLAN.tag,
+      name: DEMO_CLAN.name,
+      fame: 12480,
+      repairPoints: 0,
+      participants: [],
+    },
+    { tag: "#P9C2LQYJ", name: "Tokyo Bridge", fame: 13110, repairPoints: 0, participants: [] },
+    { tag: "#2UL0G9CR", name: "Minion Lab", fame: 11840, repairPoints: 0, participants: [] },
+    { tag: "#8YQ2V0L9", name: "Cycle House", fame: 10990, repairPoints: 0, participants: [] },
+    { tag: "#Q0RR2V8C", name: "Boat Repair", fame: 9720, repairPoints: 0, participants: [] },
+  ],
+  source: "demo",
+  fetchedAt: NOW,
+};
+
+export const DEMO_RIVER_LOG: RiverLogEntry[] = [
+  {
+    seasonId: 87,
+    sectionIndex: 1,
+    createdDate: "20260908T220000.000Z",
+    standings: [
+      { rank: 2, trophyChange: 20, clan: { ...DEMO_RIVER_RACE.clan, fame: 18240 } },
+      { rank: 1, trophyChange: 40, clan: { tag: "#P9C2LQYJ", name: "Tokyo Bridge", fame: 19100, repairPoints: 0, participants: [] } },
+      { rank: 3, trophyChange: 0, clan: { tag: "#2UL0G9CR", name: "Minion Lab", fame: 17020, repairPoints: 0, participants: [] } },
+      { rank: 4, trophyChange: -20, clan: { tag: "#8YQ2V0L9", name: "Cycle House", fame: 15410, repairPoints: 0, participants: [] } },
+    ],
+  },
+];
+

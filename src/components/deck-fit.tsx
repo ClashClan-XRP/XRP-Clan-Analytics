@@ -1,4 +1,5 @@
 import { CardTile, DeckStrip } from "@/components/card-tile";
+import { CopyDeckButton } from "@/components/copy-deck-button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -50,6 +51,7 @@ export function DeckFitCard({ fit }: { fit: DeckFit }) {
         </div>
         <Progress value={fit.score} />
         <DeckStrip cards={d.cards} evo={d.evo} />
+        <CopyDeckButton cards={d.cards} label={d.name} />
         {d.hero || d.champion ? (
           <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
             {d.hero ? (
