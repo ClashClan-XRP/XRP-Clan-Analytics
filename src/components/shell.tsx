@@ -1,7 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { GraduationCap, LayoutGrid, Layers3, Library, Settings2, Sparkles, Swords, Users } from "lucide-react";
 import { useEffect, useState } from "react";
-import { featureFromPath, initOpsSession, track } from "@/lib/ops/log";
+import { featureFromPath, track } from "@/lib/ops/log";
 import { cn } from "@/lib/utils";
 import { useBootstrap } from "@/lib/use-bootstrap";
 import { SettingsSheet } from "./settings-sheet";
@@ -22,13 +22,11 @@ export function Shell({ children }: { children: React.ReactNode }) {
   useBootstrap();
 
   useEffect(() => {
-    void initOpsSession();
-  }, []);
-
-  useEffect(() => {
     const feat = featureFromPath(pathname);
     if (feat) track(feat, pathname);
   }, [pathname]);
+
+  const ticketsActive = pathname.startsWith("/feedback");
 
   return (
     <div className="flex min-h-dvh flex-col bg-background md:flex-row">
@@ -60,8 +58,14 @@ export function Shell({ children }: { children: React.ReactNode }) {
           })}
         </nav>
         <div className="px-5 pb-6">
-          <Link to="/ops" className="text-xs text-muted-foreground hover:text-foreground">
-            Site desk
+          <Link
+            to="/feedback"
+            className={cn(
+              "text-xs hover:text-foreground",
+              ticketsActive ? "text-foreground" : "text-muted-foreground",
+            )}
+          >
+            Tickets
           </Link>
         </div>
       </aside>
@@ -75,14 +79,25 @@ export function Shell({ children }: { children: React.ReactNode }) {
           <p className="hidden text-sm text-muted-foreground md:block">
             Meta decks, upgrade paths, and 2v2 pairings for CryptoClan-$XRP
           </p>
-          <button
-            onClick={() => setSettings(true)}
-            className="inline-flex h-11 items-center gap-2 rounded-md px-3 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground"
-            aria-label="Settings"
-          >
-            <Settings2 className="size-4" />
-            <span className="hidden sm:inline">Live API</span>
-          </button>
+          <div className="flex items-center gap-1">
+            <Link
+              to="/feedback"
+              className={cn(
+                "inline-flex h-11 items-center rounded-md px-3 text-sm",
+                ticketsActive ? "text-foreground" : "text-muted-foreground hover:bg-secondary hover:text-foreground",
+              )}
+            >
+              Tickets
+            </Link>
+            <button
+              onClick={() => setSettings(true)}
+              className="inline-flex h-11 items-center gap-2 rounded-md px-3 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground"
+              aria-label="Settings"
+            >
+              <Settings2 className="size-4" />
+              <span className="hidden sm:inline">Live API</span>
+            </button>
+          </div>
         </header>
         <main className="flex-1 px-4 pb-[calc(6.25rem+env(safe-area-inset-bottom))] pt-6 md:px-8 md:pb-10">
           {children}

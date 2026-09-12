@@ -48,10 +48,10 @@ export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () =>
           <li>Paste a replacement token here if this one expires. It stays on this device only.</li>
         </ol>
         <p className="mt-4 text-sm text-muted-foreground">
-          <Link to="/ops" className="text-primary hover:underline" onClick={onClose}>
-            Site desk
+          <Link to="/feedback" className="text-primary hover:underline" onClick={onClose}>
+            Tickets
           </Link>{" "}
-          — visitor log, feature use, and the suggestion queue.
+          — submit or review suggestions and bugs.
         </p>
         <div className="mt-5 flex justify-end gap-2">
           <Button variant="ghost" onClick={onClose}>

@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Ticket board (submit and review)
+    url: https://clashclan-xrp.github.io/#/feedback
+    about: File a suggestion or bug, or review open clan tickets.

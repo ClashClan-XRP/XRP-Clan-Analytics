@@ -1,0 +1,23 @@
+name: Bug
+description: Something on the site is broken
+title: "[bug] "
+labels: ["feedback", "bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What did you see?
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: input
+    id: where
+    attributes:
+      label: Where
+      description: Board, Clan, Coach, War, Copy deck, etc.

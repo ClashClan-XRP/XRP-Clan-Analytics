@@ -1,11 +1,7 @@
-# Site log
+# Logs
 
-Canonical shared snapshot: [`/public/logs/site-log.json`](../public/logs/site-log.json)
+Visitor analytics, feature-use, and admin notes are **not** stored in this public repository.
 
-The **Site Desk** (`/#/ops`) merges:
+Clan leadership reviews that data in the private GitHub desk (GitHub login + collaborator access required). Ask a repo admin for the desk link.
 
-1. This committed file (shared baseline in the repo)
-2. This browser’s session log (feature use, city, masked IP)
-3. GitHub issues labeled `feedback` (suggestion box + bugs)
-
-Suggestions submitted on the board open a GitHub issue so they live on the repository. Full client IPs are not written to this public file — city/country and a masked last-octet IP are.
+Public tickets (suggestions and bugs) live as GitHub issues labeled `feedback` and on the ticket board: https://clashclan-xrp.github.io/#/feedback

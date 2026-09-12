@@ -13,8 +13,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as CardsRouteImport } from './routes/cards'
 import { Route as ClanRouteImport } from './routes/clan'
 import { Route as CoachRouteImport } from './routes/coach'
+import { Route as FeedbackRouteImport } from './routes/feedback'
 import { Route as MetaRouteImport } from './routes/meta'
-import { Route as OpsRouteImport } from './routes/ops'
 import { Route as PlayerRouteImport } from './routes/player'
 import { Route as UpgradesRouteImport } from './routes/upgrades'
 
@@ -38,14 +38,14 @@ const CoachRoute = CoachRouteImport.update({
   path: '/coach',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FeedbackRoute = FeedbackRouteImport.update({
+  id: '/feedback',
+  path: '/feedback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MetaRoute = MetaRouteImport.update({
   id: '/meta',
   path: '/meta',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OpsRoute = OpsRouteImport.update({
-  id: '/ops',
-  path: '/ops',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlayerRoute = PlayerRouteImport.update({
@@ -64,8 +64,8 @@ export interface FileRoutesByFullPath {
   '/cards': typeof CardsRoute
   '/clan': typeof ClanRoute
   '/coach': typeof CoachRoute
+  '/feedback': typeof FeedbackRoute
   '/meta': typeof MetaRoute
-  '/ops': typeof OpsRoute
   '/player': typeof PlayerRoute
   '/upgrades': typeof UpgradesRoute
 }
@@ -74,8 +74,8 @@ export interface FileRoutesByTo {
   '/cards': typeof CardsRoute
   '/clan': typeof ClanRoute
   '/coach': typeof CoachRoute
+  '/feedback': typeof FeedbackRoute
   '/meta': typeof MetaRoute
-  '/ops': typeof OpsRoute
   '/player': typeof PlayerRoute
   '/upgrades': typeof UpgradesRoute
 }
@@ -85,8 +85,8 @@ export interface FileRoutesById {
   '/cards': typeof CardsRoute
   '/clan': typeof ClanRoute
   '/coach': typeof CoachRoute
+  '/feedback': typeof FeedbackRoute
   '/meta': typeof MetaRoute
-  '/ops': typeof OpsRoute
   '/player': typeof PlayerRoute
   '/upgrades': typeof UpgradesRoute
 }
@@ -97,8 +97,8 @@ export interface FileRouteTypes {
     | '/cards'
     | '/clan'
     | '/coach'
+    | '/feedback'
     | '/meta'
-    | '/ops'
     | '/player'
     | '/upgrades'
   fileRoutesByTo: FileRoutesByTo
@@ -107,8 +107,8 @@ export interface FileRouteTypes {
     | '/cards'
     | '/clan'
     | '/coach'
+    | '/feedback'
     | '/meta'
-    | '/ops'
     | '/player'
     | '/upgrades'
   id:
@@ -117,8 +117,8 @@ export interface FileRouteTypes {
     | '/cards'
     | '/clan'
     | '/coach'
+    | '/feedback'
     | '/meta'
-    | '/ops'
     | '/player'
     | '/upgrades'
   fileRoutesById: FileRoutesById
@@ -128,8 +128,8 @@ export interface RootRouteChildren {
   CardsRoute: typeof CardsRoute
   ClanRoute: typeof ClanRoute
   CoachRoute: typeof CoachRoute
+  FeedbackRoute: typeof FeedbackRoute
   MetaRoute: typeof MetaRoute
-  OpsRoute: typeof OpsRoute
   PlayerRoute: typeof PlayerRoute
   UpgradesRoute: typeof UpgradesRoute
 }
@@ -164,18 +164,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CoachRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/feedback': {
+      id: '/feedback'
+      path: '/feedback'
+      fullPath: '/feedback'
+      preLoaderRoute: typeof FeedbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/meta': {
       id: '/meta'
       path: '/meta'
       fullPath: '/meta'
       preLoaderRoute: typeof MetaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/ops': {
-      id: '/ops'
-      path: '/ops'
-      fullPath: '/ops'
-      preLoaderRoute: typeof OpsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/player': {
@@ -200,8 +200,8 @@ const rootRouteChildren: RootRouteChildren = {
   CardsRoute: CardsRoute,
   ClanRoute: ClanRoute,
   CoachRoute: CoachRoute,
+  FeedbackRoute: FeedbackRoute,
   MetaRoute: MetaRoute,
-  OpsRoute: OpsRoute,
   PlayerRoute: PlayerRoute,
   UpgradesRoute: UpgradesRoute,
 }
