@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { FeedbackBox } from "@/components/feedback-box";
 import { recommendLadder } from "@/lib/cr/analysis";
 import { APP_NAME, DEFAULT_CLAN_NAME, DEFAULT_CLAN_TAG, DEFAULT_PLAYER_TAG } from "@/lib/cr/defaults";
 import { META_AS_OF, META_DECKS, META_LABEL } from "@/lib/cr/meta";
@@ -186,6 +187,8 @@ function Home() {
           )}
         </p>
       ) : null}
+
+      <FeedbackBox />
     </div>
   );
 }

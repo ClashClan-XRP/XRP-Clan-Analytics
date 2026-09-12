@@ -14,6 +14,7 @@ import { Route as CardsRouteImport } from './routes/cards'
 import { Route as ClanRouteImport } from './routes/clan'
 import { Route as CoachRouteImport } from './routes/coach'
 import { Route as MetaRouteImport } from './routes/meta'
+import { Route as OpsRouteImport } from './routes/ops'
 import { Route as PlayerRouteImport } from './routes/player'
 import { Route as UpgradesRouteImport } from './routes/upgrades'
 
@@ -42,6 +43,11 @@ const MetaRoute = MetaRouteImport.update({
   path: '/meta',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OpsRoute = OpsRouteImport.update({
+  id: '/ops',
+  path: '/ops',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PlayerRoute = PlayerRouteImport.update({
   id: '/player',
   path: '/player',
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/clan': typeof ClanRoute
   '/coach': typeof CoachRoute
   '/meta': typeof MetaRoute
+  '/ops': typeof OpsRoute
   '/player': typeof PlayerRoute
   '/upgrades': typeof UpgradesRoute
 }
@@ -68,6 +75,7 @@ export interface FileRoutesByTo {
   '/clan': typeof ClanRoute
   '/coach': typeof CoachRoute
   '/meta': typeof MetaRoute
+  '/ops': typeof OpsRoute
   '/player': typeof PlayerRoute
   '/upgrades': typeof UpgradesRoute
 }
@@ -78,15 +86,31 @@ export interface FileRoutesById {
   '/clan': typeof ClanRoute
   '/coach': typeof CoachRoute
   '/meta': typeof MetaRoute
+  '/ops': typeof OpsRoute
   '/player': typeof PlayerRoute
   '/upgrades': typeof UpgradesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/cards' | '/clan' | '/coach' | '/meta' | '/player' | '/upgrades'
+    | '/'
+    | '/cards'
+    | '/clan'
+    | '/coach'
+    | '/meta'
+    | '/ops'
+    | '/player'
+    | '/upgrades'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/cards' | '/clan' | '/coach' | '/meta' | '/player' | '/upgrades'
+  to:
+    | '/'
+    | '/cards'
+    | '/clan'
+    | '/coach'
+    | '/meta'
+    | '/ops'
+    | '/player'
+    | '/upgrades'
   id:
     | '__root__'
     | '/'
@@ -94,6 +118,7 @@ export interface FileRouteTypes {
     | '/clan'
     | '/coach'
     | '/meta'
+    | '/ops'
     | '/player'
     | '/upgrades'
   fileRoutesById: FileRoutesById
@@ -104,6 +129,7 @@ export interface RootRouteChildren {
   ClanRoute: typeof ClanRoute
   CoachRoute: typeof CoachRoute
   MetaRoute: typeof MetaRoute
+  OpsRoute: typeof OpsRoute
   PlayerRoute: typeof PlayerRoute
   UpgradesRoute: typeof UpgradesRoute
 }
@@ -145,6 +171,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MetaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ops': {
+      id: '/ops'
+      path: '/ops'
+      fullPath: '/ops'
+      preLoaderRoute: typeof OpsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/player': {
       id: '/player'
       path: '/player'
@@ -168,6 +201,7 @@ const rootRouteChildren: RootRouteChildren = {
   ClanRoute: ClanRoute,
   CoachRoute: CoachRoute,
   MetaRoute: MetaRoute,
+  OpsRoute: OpsRoute,
   PlayerRoute: PlayerRoute,
   UpgradesRoute: UpgradesRoute,
 }

@@ -13,6 +13,7 @@ import { lookupBattles, lookupClan, lookupPairIntel, lookupPlayer, lookupRiverLo
 import { DEFAULT_CLAN_TAG } from "@/lib/cr/defaults";
 import { duoRecord, favoriteCards, recommendPairStrategies, type PairStrategy } from "@/lib/cr/pairings";
 import { memberRaceLine, recommendWarDecks, type WarDeckPick } from "@/lib/cr/wars";
+import { track } from "@/lib/ops/log";
 import { useAppStore } from "@/lib/store";
 import { cn, formatInt, formatTag } from "@/lib/utils";
 import type { Battle, ClanMember, PlayerProfile, RiverLogEntry, RiverRace } from "@/lib/cr/types";
@@ -156,6 +157,7 @@ function ClanPage() {
   const favB = useMemo(() => (pairPlayers ? favoriteCards(pairPlayers.battlesB) : []), [pairPlayers]);
 
   function togglePair(memberTag: string) {
+    track("pair");
     setPick((prev) => {
       if (prev.includes(memberTag)) return prev.filter((t) => t !== memberTag);
       if (prev.length < 2) return [...prev, memberTag];
@@ -164,6 +166,7 @@ function ClanPage() {
   }
 
   function openWar(memberTag: string) {
+    track("war");
     setWarTag(memberTag);
     const el = document.getElementById("war-decks");
     el?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -176,8 +179,8 @@ function ClanPage() {
           <p className="text-xs font-medium uppercase tracking-[0.2em] text-primary">Clan module</p>
           <h1 className="mt-1 font-display text-5xl leading-none">Roster, wars, pairs</h1>
           <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-            Pair two clanmates for 2v2, or open War on a row for four fitted war decks. Scroll the table sideways — Pair,
-            War, and name stay put.
+            Pair two clanmates for 2v2, or open War on a row for four exclusive war decks (no card repeats). The name
+            column stays put while the rest of the sheet scrolls.
           </p>
         </div>
         <form
@@ -339,15 +342,15 @@ function RosterTable({
   onWar: (tag: string) => void;
 }) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-border">
+    <div id="roster-sheet" className="overflow-x-auto rounded-xl border border-border">
       <table className="w-full min-w-[52rem] border-separate border-spacing-0 text-left text-sm">
         <thead className="bg-secondary text-xs uppercase tracking-wide text-muted-foreground">
           <tr>
-            <th className="sticky left-0 z-20 bg-secondary px-2 py-3 font-medium">Pair</th>
-            <th className="sticky left-[4.75rem] z-20 bg-secondary px-2 py-3 font-medium">War</th>
-            <th className="sticky left-[9.5rem] z-20 bg-secondary px-3 py-3 font-medium shadow-[2px_0_0_0_var(--color-border)]">
+            <th className="sticky left-0 z-20 min-w-[13rem] bg-secondary px-3 py-3 font-medium shadow-[2px_0_0_0_var(--color-border)]">
               Player
             </th>
+            <th className="px-2 py-3 font-medium">Pair</th>
+            <th className="px-2 py-3 font-medium">War</th>
             <th className="px-4 py-3 font-medium">Role</th>
             <th className="px-4 py-3 font-medium">King</th>
             <th className="px-4 py-3 font-medium">Trophies</th>
@@ -366,7 +369,13 @@ function RosterTable({
             const sticky = hi ? "bg-elevated" : "bg-card";
             return (
               <tr key={m.tag} className={cn("border-t border-border", hi ? "bg-elevated" : "bg-card")}>
-                <td className={cn("sticky left-0 z-10 w-[4.75rem] px-2 py-2", sticky)}>
+                <td className={cn("sticky left-0 z-10 min-w-[13rem] px-3 py-2 shadow-[2px_0_0_0_var(--color-border)]", sticky)}>
+                  <div className="flex items-center gap-1.5">
+                    <PlayerName name={m.name} tag={m.tag} className="text-foreground" />
+                    <CopyTag tag={formatTag(m.tag)} />
+                  </div>
+                </td>
+                <td className="px-2 py-2">
                   <Button
                     size="sm"
                     variant={idx >= 0 ? "default" : "outline"}
@@ -376,16 +385,10 @@ function RosterTable({
                     {idx >= 0 ? `P${idx + 1}` : "Pair"}
                   </Button>
                 </td>
-                <td className={cn("sticky left-[4.75rem] z-10 w-[4.75rem] px-2 py-2", sticky)}>
+                <td className="px-2 py-2">
                   <Button size="sm" variant={warOn ? "default" : "outline"} onClick={() => onWar(m.tag)} aria-pressed={warOn}>
                     War
                   </Button>
-                </td>
-                <td className={cn("sticky left-[9.5rem] z-10 min-w-[13rem] px-3 py-2 shadow-[2px_0_0_0_var(--color-border)]", sticky)}>
-                  <div className="flex items-center gap-1.5">
-                    <PlayerName name={m.name} tag={m.tag} className="text-foreground" />
-                    <CopyTag tag={formatTag(m.tag)} />
-                  </div>
                 </td>
                 <td className="px-4 py-2 capitalize text-muted-foreground">{m.role}</td>
                 <td className="px-4 py-2 tabular">{m.expLevel > 0 ? m.expLevel : "—"}</td>

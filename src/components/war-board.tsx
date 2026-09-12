@@ -3,7 +3,8 @@ import { PlayerName } from "@/components/player-name";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { lastRaceFinish, periodLabel, raceRank, unusedToday, warAdvice, type WarDeckPick } from "@/lib/cr/wars";
+import { CARDS_BY_KEY } from "@/lib/cr/catalog";
+import { lastRaceFinish, periodLabel, raceRank, uniqueWarCards, unusedToday, warAdvice, type WarDeckPick } from "@/lib/cr/wars";
 import type { ClanProfile, PlayerProfile, RiverLogEntry, RiverRace } from "@/lib/cr/types";
 import { formatInt } from "@/lib/utils";
 
@@ -155,7 +156,8 @@ export function WarDecksPanel({
           Four war decks · <PlayerName name={player.name} tag={player.tag} />
         </h3>
         <p className="mt-1 text-sm text-muted-foreground">
-          Ranked by collection, king level, evos, champions, and how often those cards showed up in the last 25 games.
+          {uniqueWarCards(picks).length} unique cards across four lists — no repeats. Fitted for usage, levels, synergies,
+          and this week’s meta holes. Substitutions replace low-level, missing evo, or missing champion slots.
         </p>
       </div>
       <div className="grid gap-4 lg:grid-cols-2">
@@ -165,6 +167,15 @@ export function WarDecksPanel({
             <p className="px-1 text-xs text-muted-foreground">
               War score {fit.warScore} · {fit.usageNote}
             </p>
+            {fit.substitutions.length ? (
+              <ul className="px-1 text-xs text-muted-foreground">
+                {fit.substitutions.map((s) => (
+                  <li key={`${s.from}-${s.to}`}>
+                    {CARDS_BY_KEY[s.from]?.name ?? s.from} → {CARDS_BY_KEY[s.to]?.name ?? s.to} · {s.why}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
           </div>
         ))}
       </div>

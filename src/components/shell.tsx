@@ -1,6 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { GraduationCap, LayoutGrid, Layers3, Library, Settings2, Sparkles, Swords, Users } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { featureFromPath, initOpsSession, track } from "@/lib/ops/log";
 import { cn } from "@/lib/utils";
 import { useBootstrap } from "@/lib/use-bootstrap";
 import { SettingsSheet } from "./settings-sheet";
@@ -19,6 +20,15 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [settings, setSettings] = useState(false);
   useBootstrap();
+
+  useEffect(() => {
+    void initOpsSession();
+  }, []);
+
+  useEffect(() => {
+    const feat = featureFromPath(pathname);
+    if (feat) track(feat, pathname);
+  }, [pathname]);
 
   return (
     <div className="flex min-h-dvh flex-col bg-background md:flex-row">
@@ -49,6 +59,11 @@ export function Shell({ children }: { children: React.ReactNode }) {
             );
           })}
         </nav>
+        <div className="px-5 pb-6">
+          <Link to="/ops" className="text-xs text-muted-foreground hover:text-foreground">
+            Site desk
+          </Link>
+        </div>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">

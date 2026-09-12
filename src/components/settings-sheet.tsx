@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -46,6 +47,12 @@ export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () =>
           <li>Whitelist IP 45.79.218.79 so the RoyaleAPI proxy can reach it.</li>
           <li>Paste a replacement token here if this one expires. It stays on this device only.</li>
         </ol>
+        <p className="mt-4 text-sm text-muted-foreground">
+          <Link to="/ops" className="text-primary hover:underline" onClick={onClose}>
+            Site desk
+          </Link>{" "}
+          — visitor log, feature use, and the suggestion queue.
+        </p>
         <div className="mt-5 flex justify-end gap-2">
           <Button variant="ghost" onClick={onClose}>
             Cancel

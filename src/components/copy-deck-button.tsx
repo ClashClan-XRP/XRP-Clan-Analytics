@@ -2,6 +2,7 @@ import { Check, Copy, Smartphone } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { copyDeckDeepLink, copyDeckUrl } from "@/lib/cr/catalog";
+import { track } from "@/lib/ops/log";
 import { cn } from "@/lib/utils";
 
 export function CopyDeckButton({
@@ -36,7 +37,14 @@ export function CopyDeckButton({
 
   return (
     <div className={cn("flex flex-wrap items-center gap-2", className)}>
-      <Button asChild size={size} onClick={(e) => e.stopPropagation()}>
+      <Button
+        asChild
+        size={size}
+        onClick={(e) => {
+          e.stopPropagation();
+          track("copy-deck");
+        }}
+      >
         <a href={href} target="_blank" rel="noreferrer">
           <Smartphone />
           Copy deck
