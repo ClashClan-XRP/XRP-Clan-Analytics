@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Mic, MicOff, Pause, Play, RotateCcw, Volume2, VolumeX } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CardTile } from "@/components/card-tile";
+import { LiveNearby } from "@/components/live-nearby";
 import { LiveShare } from "@/components/live-share";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,7 +36,7 @@ import { canListen, canSpeak, speak, startListen, stopSpeak } from "@/lib/cr/voi
 import { useAppStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
-type Search = { you?: string; them?: string };
+type Search = { you?: string; them?: string; near?: string; as?: string };
 
 function splitDeck(raw?: string): string[] {
   if (!raw) return [];
@@ -46,6 +47,8 @@ export const Route = createFileRoute("/live")({
   validateSearch: (s: Record<string, unknown>): Search => ({
     you: typeof s.you === "string" ? s.you : undefined,
     them: typeof s.them === "string" ? s.them : undefined,
+    near: typeof s.near === "string" ? s.near : undefined,
+    as: typeof s.as === "string" ? s.as : undefined,
   }),
   component: LivePage,
 });
@@ -64,6 +67,7 @@ function LivePage() {
   const [micError, setMicError] = useState<string | null>(null);
   const [oppTag, setOppTag] = useState("");
   const [oppBusy, setOppBusy] = useState(false);
+  const [incoming, setIncoming] = useState<MediaStream | null>(null);
   const spoken = useRef<string>("");
   const matchRef = useRef(match);
   matchRef.current = match;
@@ -227,6 +231,7 @@ function LivePage() {
           setVoiceOn(false);
         }}
         onElixir={(n) => setMatch((m) => (m ? setElixir(m, "you", n) : m))}
+        incoming={incoming}
       />
     );
   }
@@ -238,8 +243,8 @@ function LivePage() {
           <p className="text-xs font-medium uppercase tracking-[0.2em] text-primary">Live coach</p>
           <h1 className="mt-1 font-display text-5xl leading-none">Call the match</h1>
           <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-            Set both eights. Share the game window so the coach watches your hand — no mic. During the match, tap
-            their card or tap a portrait on the share. Clash Royale does not stream live plays; this sits beside it.
+            Set both eights. A clanmate’s nearby iPhone (their own Apple ID) can be the camera. Share a window on a
+            computer, or tap their cards. Clash Royale does not stream live plays.
           </p>
         </div>
         <Button onClick={begin} disabled={you.length !== 8 || them.length !== 8} className="h-12 px-6">
@@ -294,6 +299,13 @@ function LivePage() {
           if (a.length === 8) setYou(a);
           if (b.length === 8) setThem(b);
         }}
+        incoming={incoming}
+      />
+
+      <LiveNearby
+        presetCode={search.near}
+        presetRole={search.as === "spot" ? "spot" : search.as === "host" ? "host" : undefined}
+        onStream={setIncoming}
       />
 
       {brief ? (
@@ -383,6 +395,7 @@ function LiveHud({
   onSpeak,
   onReset,
   onElixir,
+  incoming,
 }: {
   match: LiveMatch;
   voiceOn: boolean;
@@ -399,6 +412,7 @@ function LiveHud({
   onSpeak: () => void;
   onReset: () => void;
   onElixir: (n: number) => void;
+  incoming: MediaStream | null;
 }) {
   const phase = phaseOf(match);
   const lead = match.you.elixir - match.them.elixir;
@@ -483,6 +497,7 @@ function LiveHud({
         onYouPlay={(k) => onPlay("you", k)}
         onThemPlay={(k) => onPlay("them", k)}
         onElixir={onElixir}
+        incoming={incoming}
       />
 
       <SideBoard title="Opponent — tap what they drop" side={match.them} onPlay={(k) => onPlay("them", k)} danger />

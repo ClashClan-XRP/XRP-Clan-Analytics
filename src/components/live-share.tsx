@@ -42,6 +42,7 @@ type Props = {
   onThemPlay: (key: string) => void;
   onElixir?: (n: number) => void;
   onDecks?: (you: string[], them: string[]) => void;
+  incoming?: MediaStream | null;
 };
 
 export function LiveShare(props: Props) {
@@ -110,8 +111,24 @@ export function LiveShare(props: Props) {
     return () => stopShare();
   }, []);
 
+  useEffect(() => {
+    const stream = props.incoming;
+    if (!stream) return;
+    streamRef.current = stream;
+    const v = videoRef.current;
+    if (v) {
+      v.srcObject = stream;
+      void v.play().catch(() => undefined);
+    }
+    setLive(true);
+    setSource("camera");
+    setStatus("Nearby camera attached. Lock the hand when the four cards show.");
+  }, [props.incoming]);
+
   function stopShare() {
-    streamRef.current?.getTracks().forEach((t) => t.stop());
+    if (streamRef.current && streamRef.current !== props.incoming) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+    }
     streamRef.current = null;
     const v = videoRef.current;
     if (v) v.srcObject = null;

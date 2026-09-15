@@ -11,6 +11,7 @@ export const FEATURES = [
   "coach",
   "live",
   "share",
+  "nearby",
   "upgrades",
   "cards",
   "copy-deck",
