@@ -117,13 +117,12 @@ export function LiveNearby({ presetCode, presetRole, onStream }: Props) {
           {linked ? <Badge variant="win">Linked</Badge> : null}
         </div>
         <p className="text-sm text-muted-foreground">
-          Safari cannot capture Clash Royale on the same iPhone. A clanmate with their own Apple ID holds a second
-          phone, opens this page, and points the camera at your match. Coach talks on that phone. AirDrop the link —
-          Continuity / iPhone Mirroring will not work across accounts.
+          Spectator cam above is the usual path: this phone watches theirs, Live stays here. Use Nearby only when the
+          camera is on one iPhone and the coach HUD is on another. Apple IDs do not need to match. AirDrop the join
+          link.
         </p>
         <p className="text-sm text-muted-foreground">
-          FaceTime → Share My Screen also works across Apple IDs if you’d rather they watch in FaceTime and run Live
-          on a tablet.
+          FaceTime → Share My Screen still works across Apple IDs if they would rather you watch in FaceTime.
         </p>
         <div className="flex flex-wrap gap-2">
           <Button type="button" variant={role === "host" ? "default" : "outline"} onClick={() => void becomeHost()}>

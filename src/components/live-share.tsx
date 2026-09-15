@@ -74,6 +74,7 @@ export function LiveShare(props: Props) {
 
   const [live, setLive] = useState(false);
   const [source, setSource] = useState<"screen" | "camera" | null>(null);
+  const wakeRef = useRef<WakeLockSentinel | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState("Share the emulator or a phone-mirror window.");
   const [slots, setSlots] = useState<Array<string | null>>([null, null, null, null]);
@@ -122,6 +123,12 @@ export function LiveShare(props: Props) {
     }
     setLive(true);
     setSource("camera");
+    track("spectator");
+    if (navigator.wakeLock) {
+      void navigator.wakeLock.request("screen").then((lock) => {
+        wakeRef.current = lock;
+      }).catch(() => undefined);
+    }
     setStatus("Nearby camera attached. Lock the hand when the four cards show.");
   }, [props.incoming]);
 
@@ -132,6 +139,8 @@ export function LiveShare(props: Props) {
     streamRef.current = null;
     const v = videoRef.current;
     if (v) v.srcObject = null;
+    wakeRef.current?.release().catch(() => undefined);
+    wakeRef.current = null;
     setLive(false);
     setSource(null);
     setLocked(false);
@@ -153,8 +162,17 @@ export function LiveShare(props: Props) {
       }
       setLive(true);
       setSource(kind);
-      track("share");
-      setStatus(kind === "screen" ? "Watching the share. Lock your hand when the four cards are visible." : "Camera up. Frame the phone so the hand row sits in the guides.");
+      track(kind === "camera" ? "spectator" : "share");
+      if (kind === "camera" && navigator.wakeLock) {
+        void navigator.wakeLock.request("screen").then((lock) => {
+          wakeRef.current = lock;
+        }).catch(() => undefined);
+      }
+      setStatus(
+        kind === "screen"
+          ? "Watching the share. Lock the hand when the four cards are visible."
+          : "Spectator cam is on. Point this phone at the other screen. You stay in Live; they stay in the match.",
+      );
     } catch (e) {
       setError(e instanceof Error ? e.message : "Share was blocked.");
       setLive(false);
@@ -337,7 +355,7 @@ export function LiveShare(props: Props) {
             </Button>
             <Button type="button" variant={source === "camera" ? "default" : "outline"} onClick={() => void begin("camera")} disabled={!caps.camera}>
               <Camera className="size-4" />
-              Camera
+              Spectator cam
             </Button>
             {live ? (
               <Button type="button" variant="ghost" onClick={stopShare}>
@@ -347,9 +365,9 @@ export function LiveShare(props: Props) {
           </div>
         </div>
         <p className="text-sm text-muted-foreground">
-          ClashQuant’s method: detections are not plays. A troop that newly appears on their half, sticks for two
-          frames, then cools down — that’s a play. Share an emulator or mirror. Lock your hand so we call yours. Tap
-          theirs if the model misses.
+          Yes — this phone can be the spectator. Open Live here, tap Spectator cam, and point it at the other iPhone
+          (playing or spectating in Clash Royale). Quant, cycle, elixir, and the spoken coach all stay on this device.
+          Nearby is only if you need to send the camera to a third phone.
         </p>
         {error ? <p className="text-sm text-loss">{error}</p> : null}
         <div
@@ -411,6 +429,7 @@ export function LiveShare(props: Props) {
             Quant {quantOn ? "on" : "off"}
           </Button>
           {locked ? <Badge variant="win">Hand locked</Badge> : null}
+          {source === "camera" && live ? <Badge variant="win">Spectator</Badge> : null}
           {quantOn && live ? <Badge variant="win">GameState</Badge> : null}
           {roboflowKey && live ? <Badge variant="cyan">{rfBusy ? "YOLO…" : "YOLO"}</Badge> : null}
           {live ? <Badge variant="cyan">{source === "camera" ? "Camera" : "Share"}</Badge> : null}

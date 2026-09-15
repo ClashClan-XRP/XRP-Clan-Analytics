@@ -12,6 +12,7 @@ export const FEATURES = [
   "live",
   "share",
   "nearby",
+  "spectator",
   "upgrades",
   "cards",
   "copy-deck",
