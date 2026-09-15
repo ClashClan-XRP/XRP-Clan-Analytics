@@ -1,4 +1,4 @@
-# XRP Clan Analytics
+# XRP Arena Intel
 
 Clash Royale **meta lab**, player scout, clan room, and upgrade planner for [**CryptoClan-$XRP**](https://royaleapi.com/clan/RQ2V9QV9).
 

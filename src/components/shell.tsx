@@ -36,8 +36,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
       <aside className="sticky top-0 hidden h-dvh w-56 shrink-0 flex-col border-r border-border bg-card/60 md:flex">
         <div className="px-5 pb-6 pt-7">
           <Link to="/" className="block">
-            <div className="font-display text-3xl leading-none tracking-wide text-foreground">XRP CLAN</div>
-            <div className="font-display text-2xl leading-none tracking-wide text-primary">ANALYTICS</div>
+            <div className="font-display text-3xl leading-none tracking-wide text-foreground">XRP ARENA</div>
+            <div className="font-display text-2xl leading-none tracking-wide text-primary">INTEL</div>
           </Link>
           <p className="mt-2 text-xs text-muted-foreground">Season 87 · live lookup</p>
         </div>
@@ -76,8 +76,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-border bg-background/95 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur-sm md:px-8">
           <Link to="/" className="md:hidden">
-            <span className="font-display text-2xl leading-none text-foreground">XRP CLAN</span>
-            <span className="font-display text-2xl leading-none text-primary"> ANALYTICS</span>
+            <span className="font-display text-2xl leading-none text-foreground">XRP ARENA</span>
+            <span className="font-display text-2xl leading-none text-primary"> INTEL</span>
           </Link>
           <p className="hidden text-sm text-muted-foreground md:block">
             Meta decks, upgrade paths, and 2v2 pairings for CryptoClan-$XRP

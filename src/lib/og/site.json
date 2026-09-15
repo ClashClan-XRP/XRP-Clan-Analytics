@@ -1,6 +1,8 @@
 {
-  "title": "XRP Clan Analytics",
+  "title": "XRP Arena Intel",
+  "type": "x:game",
   "card": "custom",
+  "banner": "/x-banner.jpg",
   "color": "0B1016",
   "description": "Clash Royale meta, upgrades, and 2v2 pairings for CryptoClan-$XRP."
 }

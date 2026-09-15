@@ -5,4 +5,4 @@ export const DEFAULT_API_TOKEN =
 export const DEFAULT_CLAN_TAG = "#RQ2V9QV9";
 export const DEFAULT_CLAN_NAME = "CryptoClan-$XRP";
 export const DEFAULT_PLAYER_TAG = "#8Q8U9JLJL";
-export const APP_NAME = "XRP Clan Analytics";
+export const APP_NAME = "XRP Arena Intel";

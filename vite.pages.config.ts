@@ -11,6 +11,7 @@ export default defineConfig({
   publicDir: "../public",
   define: {
     "import.meta.env.VITE_STATIC_SPA": JSON.stringify("1"),
+    "import.meta.env.VITE_PUBLIC_HOSTNAME": JSON.stringify("clashclan-xrp.github.io"),
   },
   plugins: [
     tanstackRouter({
