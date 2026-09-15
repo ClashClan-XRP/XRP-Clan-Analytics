@@ -175,7 +175,7 @@ function Home() {
           <Card className="h-full transition-colors duration-150 hover:border-primary/40">
             <CardContent>
               <div className="font-display text-2xl">Live coach</div>
-              <p className="mt-1 text-sm text-muted-foreground">Track their cycle and elixir mid-match. Tap or talk — the coach answers out loud.</p>
+              <p className="mt-1 text-sm text-muted-foreground">Share the match window. The coach watches your hand, tracks elixir, and talks the line — no mic required.</p>
             </CardContent>
           </Card>
         </Link>

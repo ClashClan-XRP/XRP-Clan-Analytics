@@ -10,6 +10,7 @@ export const FEATURES = [
   "clan",
   "coach",
   "live",
+  "share",
   "upgrades",
   "cards",
   "copy-deck",

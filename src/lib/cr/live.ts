@@ -283,6 +283,12 @@ function cyclePlay(side: LiveSide, key: string): { side: LiveSide; corrected: bo
   };
 }
 
+export function setElixir(m: LiveMatch, sideId: LiveSideId, elixir: number): LiveMatch {
+  const next = Math.max(0, Math.min(MAX_ELIXIR, elixir));
+  if (Math.abs(m[sideId].elixir - next) < 0.35) return m;
+  return { ...m, [sideId]: { ...m[sideId], elixir: next } };
+}
+
 export function playCard(m: LiveMatch, sideId: LiveSideId, key: string): LiveMatch {
   const side = m[sideId];
   const next = cyclePlay(side, key);

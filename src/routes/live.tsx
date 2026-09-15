@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Mic, MicOff, Pause, Play, RotateCcw, Volume2, VolumeX } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CardTile } from "@/components/card-tile";
+import { LiveShare } from "@/components/live-share";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,6 +21,7 @@ import {
   phaseOf,
   playCard,
   playableDeck,
+  setElixir,
   startMatch,
   tick,
   undoLast,
@@ -224,6 +226,7 @@ function LivePage() {
           setMatch(null);
           setVoiceOn(false);
         }}
+        onElixir={(n) => setMatch((m) => (m ? setElixir(m, "you", n) : m))}
       />
     );
   }
@@ -235,8 +238,8 @@ function LivePage() {
           <p className="text-xs font-medium uppercase tracking-[0.2em] text-primary">Live coach</p>
           <h1 className="mt-1 font-display text-5xl leading-none">Call the match</h1>
           <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-            Set both eights. During the game, tap a card or say “they hog” / “I log”. The coach tracks cycle and elixir
-            and talks the line out loud. Clash Royale does not stream live plays — this sits beside the match.
+            Set both eights. Share the game window so the coach watches your hand — no mic. During the match, tap
+            their card or tap a portrait on the share. Clash Royale does not stream live plays; this sits beside it.
           </p>
         </div>
         <Button onClick={begin} disabled={you.length !== 8 || them.length !== 8} className="h-12 px-6">
@@ -279,6 +282,19 @@ function LivePage() {
           </form>
         </CardContent>
       </Card>
+
+      <LiveShare
+        mode="setup"
+        youDeck={you}
+        themDeck={them}
+        youHand={you.slice(0, 4)}
+        onYouPlay={() => undefined}
+        onThemPlay={() => undefined}
+        onDecks={(a, b) => {
+          if (a.length === 8) setYou(a);
+          if (b.length === 8) setThem(b);
+        }}
+      />
 
       {brief ? (
         <Card>
@@ -366,6 +382,7 @@ function LiveHud({
   onVoice,
   onSpeak,
   onReset,
+  onElixir,
 }: {
   match: LiveMatch;
   voiceOn: boolean;
@@ -381,6 +398,7 @@ function LiveHud({
   onVoice: () => void;
   onSpeak: () => void;
   onReset: () => void;
+  onElixir: (n: number) => void;
 }) {
   const phase = phaseOf(match);
   const lead = match.you.elixir - match.them.elixir;
@@ -456,6 +474,16 @@ function LiveHud({
           <p className="mt-1 font-display text-3xl leading-none text-foreground">{latest?.text ?? "Clock’s running. Call the first card."}</p>
         </CardContent>
       </Card>
+
+      <LiveShare
+        mode="match"
+        youDeck={match.you.deck}
+        themDeck={match.them.deck}
+        youHand={inHand(match.you)}
+        onYouPlay={(k) => onPlay("you", k)}
+        onThemPlay={(k) => onPlay("them", k)}
+        onElixir={onElixir}
+      />
 
       <SideBoard title="Opponent — tap what they drop" side={match.them} onPlay={(k) => onPlay("them", k)} danger />
       <SideBoard title="You — tap what you drop" side={match.you} onPlay={(k) => onPlay("you", k)} />
