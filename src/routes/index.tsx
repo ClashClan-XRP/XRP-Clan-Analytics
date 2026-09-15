@@ -146,7 +146,7 @@ function Home() {
         </div>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-3">
+      <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Link to="/upgrades" className="block">
           <Card className="h-full transition-colors duration-150 hover:border-primary/40">
             <CardContent>
@@ -168,6 +168,14 @@ function Home() {
             <CardContent>
               <div className="font-display text-2xl">Replay coach</div>
               <p className="mt-1 text-sm text-muted-foreground">Timestamped deviations, impact on the result, and pro clips of the line.</p>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link to="/live" className="block">
+          <Card className="h-full transition-colors duration-150 hover:border-primary/40">
+            <CardContent>
+              <div className="font-display text-2xl">Live coach</div>
+              <p className="mt-1 text-sm text-muted-foreground">Track their cycle and elixir mid-match. Tap or talk — the coach answers out loud.</p>
             </CardContent>
           </Card>
         </Link>

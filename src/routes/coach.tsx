@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { CoachReportView } from "@/components/coach-report";
@@ -163,7 +163,18 @@ function CoachPage() {
         </Card>
       ) : null}
 
-      {battle && report ? <CoachReportView battle={battle} report={report} /> : null}
+      {battle && report ? (
+        <div className="flex flex-col gap-3">
+          <Link
+            to="/live"
+            search={{ you: battle.deck.join(","), them: battle.opponentDeck.join(",") }}
+            className="text-sm text-primary hover:underline"
+          >
+            Open live coach on this matchup
+          </Link>
+          <CoachReportView battle={battle} report={report} />
+        </div>
+      ) : null}
     </div>
   );
 }

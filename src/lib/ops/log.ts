@@ -9,6 +9,7 @@ export const FEATURES = [
   "scout",
   "clan",
   "coach",
+  "live",
   "upgrades",
   "cards",
   "copy-deck",
@@ -28,6 +29,7 @@ export function featureFromPath(pathname: string): FeatureKey | null {
   if (pathname.startsWith("/player")) return "scout";
   if (pathname.startsWith("/clan")) return "clan";
   if (pathname.startsWith("/coach")) return "coach";
+  if (pathname.startsWith("/live")) return "live";
   if (pathname.startsWith("/upgrades")) return "upgrades";
   if (pathname.startsWith("/cards")) return "cards";
   if (pathname.startsWith("/feedback")) return "tickets";

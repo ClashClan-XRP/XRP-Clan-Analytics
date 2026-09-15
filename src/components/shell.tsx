@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { GraduationCap, LayoutGrid, Layers3, Library, Settings2, Sparkles, Swords, Users } from "lucide-react";
+import { GraduationCap, LayoutGrid, Layers3, Library, Mic, Settings2, Sparkles, Swords, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { featureFromPath, track } from "@/lib/ops/log";
 import { cn } from "@/lib/utils";
@@ -12,9 +12,12 @@ const NAV = [
   { to: "/player", label: "Scout", icon: Swords },
   { to: "/clan", label: "Clan", icon: Users },
   { to: "/coach", label: "Coach", icon: GraduationCap },
+  { to: "/live", label: "Live", icon: Mic },
   { to: "/upgrades", label: "Upgrades", icon: Sparkles },
   { to: "/cards", label: "Cards", icon: Library },
 ] as const;
+
+const NAV_MOBILE = NAV.filter((item) => item.to !== "/cards");
 
 export function Shell({ children }: { children: React.ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -105,7 +108,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
       </div>
 
       <nav className="fixed inset-x-0 bottom-0 z-40 flex border-t border-border bg-card/95 pb-[env(safe-area-inset-bottom)] md:hidden">
-        {NAV.map((item) => {
+        {NAV_MOBILE.map((item) => {
           const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
           const Icon = item.icon;
           return (
