@@ -4,12 +4,19 @@ import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DEFAULT_API_TOKEN, DEFAULT_CLAN_NAME, DEFAULT_CLAN_TAG } from "@/lib/cr/defaults";
+import { DEFAULT_QUANT_MODEL } from "@/lib/cr/quant";
 import { useAppStore } from "@/lib/store";
 
 export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const apiKey = useAppStore((s) => s.apiKey);
   const setApiKey = useAppStore((s) => s.setApiKey);
+  const roboflowKey = useAppStore((s) => s.roboflowKey);
+  const setRoboflowKey = useAppStore((s) => s.setRoboflowKey);
+  const roboflowModel = useAppStore((s) => s.roboflowModel);
+  const setRoboflowModel = useAppStore((s) => s.setRoboflowModel);
   const [draft, setDraft] = useState(apiKey || DEFAULT_API_TOKEN);
+  const [rfKey, setRfKey] = useState(roboflowKey);
+  const [rfModel, setRfModel] = useState(roboflowModel || DEFAULT_QUANT_MODEL);
 
   if (!open) return null;
 
@@ -48,6 +55,22 @@ export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () =>
           <li>Paste a replacement token here if this one expires. It stays on this device only.</li>
         </ol>
         <p className="mt-4 text-sm text-muted-foreground">
+          Optional. ClashQuant’s YOLO (StormHacks, CC BY 4.0) runs on the Live share if you paste a{" "}
+          <a className="text-primary underline-offset-2 hover:underline" href="https://universe.roboflow.com/rohinsprojects/clashquant-nvnzk" target="_blank" rel="noreferrer">
+            Roboflow
+          </a>{" "}
+          key. Stays on this device. Blank = local GameState only.
+        </p>
+        <label className="mb-1 mt-3 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          Roboflow key
+        </label>
+        <Input type="password" autoComplete="off" value={rfKey} onChange={(e) => setRfKey(e.target.value)} placeholder="rf_…" />
+        <label className="mb-1 mt-3 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          Model id
+        </label>
+        <Input value={rfModel} onChange={(e) => setRfModel(e.target.value)} placeholder={DEFAULT_QUANT_MODEL} />
+
+        <p className="mt-4 text-sm text-muted-foreground">
           <Link to="/feedback" className="text-primary hover:underline" onClick={onClose}>
             Tickets
           </Link>{" "}
@@ -60,6 +83,8 @@ export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () =>
           <Button
             onClick={() => {
               setApiKey(draft.trim() || DEFAULT_API_TOKEN);
+              setRoboflowKey(rfKey.trim());
+              setRoboflowModel(rfModel.trim() || DEFAULT_QUANT_MODEL);
               onClose();
             }}
           >

@@ -5,6 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { nameOf } from "@/lib/cr/live";
 import {
+  DEFAULT_QUANT_MODEL,
+  createQuant,
+  inferRoboflow,
+  ingestQuant,
+  type QuantState,
+} from "@/lib/cr/quant";
+import {
   PHONE_ELIXIR,
   PHONE_HANDS,
   bestMatch,
@@ -14,13 +21,16 @@ import {
   loadCatalogSignatures,
   sampleVideo,
   scanFrame,
+  scanHalf,
   signatureFromImageData,
+  slotMoved,
   startCameraShare,
   startDisplayShare,
   type RelRect,
   type Signature,
 } from "@/lib/cr/vision";
 import { track } from "@/lib/ops/log";
+import { useAppStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -42,6 +52,16 @@ export function LiveShare(props: Props) {
   const stableRef = useRef<(string | null)[]>([null, null, null, null]);
   const pendingRef = useRef<number[]>([0, 0, 0, 0]);
   const lastPlayRef = useRef(0);
+  const lastSigsRef = useRef<Array<Signature | null>>([null, null, null, null]);
+  const quantRef = useRef<QuantState>(createQuant());
+  const youDeckRef = useRef(props.youDeck);
+  const themDeckRef = useRef(props.themDeck);
+  const modeRef = useRef(props.mode);
+  const lockedRef = useRef(false);
+  const rfBusyRef = useRef(false);
+  youDeckRef.current = props.youDeck;
+  themDeckRef.current = props.themDeck;
+  modeRef.current = props.mode;
   const youPlayRef = useRef(props.onYouPlay);
   const themPlayRef = useRef(props.onThemPlay);
   const elixirRef = useRef(props.onElixir);
@@ -57,6 +77,13 @@ export function LiveShare(props: Props) {
   const [status, setStatus] = useState("Share the emulator or a phone-mirror window.");
   const [slots, setSlots] = useState<Array<string | null>>([null, null, null, null]);
   const [locked, setLocked] = useState(false);
+  lockedRef.current = locked;
+  const [quantOn, setQuantOn] = useState(true);
+  const [boxes, setBoxes] = useState<Array<{ key: string; x: number; y: number }>>([]);
+  const [rfBusy, setRfBusy] = useState(false);
+  const rfLast = useRef(0);
+  const roboflowKey = useAppStore((s) => s.roboflowKey);
+  const roboflowModel = useAppStore((s) => s.roboflowModel);
 
   const [caps, setCaps] = useState({ share: true, camera: true });
 
@@ -91,6 +118,8 @@ export function LiveShare(props: Props) {
     setLive(false);
     setSource(null);
     setLocked(false);
+    quantRef.current = createQuant();
+    setBoxes([]);
   }
 
   async function begin(kind: "screen" | "camera") {
@@ -171,9 +200,15 @@ export function LiveShare(props: Props) {
           seen[i] = stableRef.current[i] ?? null;
           return;
         }
-        const hit = bestMatch(signatureFromImageData(img), book);
+        const sig = signatureFromImageData(img);
+        if (!slotMoved(lastSigsRef.current[i] ?? null, sig)) {
+          seen[i] = stableRef.current[i] ?? null;
+          return;
+        }
+        lastSigsRef.current[i] = sig;
+        const hit = bestMatch(sig, book);
         seen[i] = hit?.key ?? null;
-        if (props.mode !== "match" || !locked) return;
+        if (modeRef.current !== "match" || !lockedRef.current) return;
         const prev = stableRef.current[i];
         if (!hit) {
           pendingRef.current[i] = 0;
@@ -198,9 +233,49 @@ export function LiveShare(props: Props) {
         const bar = sampleVideo(v, PHONE_ELIXIR);
         if (bar) elixirRef.current(elixirFromBar(bar));
       }
+
+      if (modeRef.current === "match" && quantOn) {
+        const themBook = new Map([...book].filter(([k]) => themDeckRef.current.includes(k)));
+        const local = scanHalf(v, themBook, "them");
+        let detections = local;
+        const key = useAppStore.getState().roboflowKey;
+        const model = useAppStore.getState().roboflowModel || DEFAULT_QUANT_MODEL;
+        if (key && Date.now() - rfLast.current > 800 && !rfBusyRef.current) {
+          rfLast.current = Date.now();
+          rfBusyRef.current = true;
+          setRfBusy(true);
+          void inferRoboflow(v, key, model)
+            .then((preds) => {
+              const { state, plays } = ingestQuant(quantRef.current, preds, youDeckRef.current, themDeckRef.current, ["them"]);
+              quantRef.current = state;
+              setBoxes(state.tracks.map((t) => ({ key: t.key, x: t.x, y: t.y })));
+              for (const play of plays) {
+                if (play.side === "them") {
+                  themPlayRef.current(play.key);
+                  setStatus(`Quant: they played ${nameOf(play.key)}.`);
+                }
+              }
+            })
+            .catch((e) => setStatus(e instanceof Error ? e.message : "Roboflow failed"))
+            .finally(() => {
+              rfBusyRef.current = false;
+              setRfBusy(false);
+            });
+        } else {
+          const { state, plays } = ingestQuant(quantRef.current, detections, youDeckRef.current, themDeckRef.current, ["them"]);
+          quantRef.current = state;
+          setBoxes(state.tracks.map((t) => ({ key: t.key, x: t.x, y: t.y })));
+          for (const play of plays) {
+            if (play.side === "them") {
+              themPlayRef.current(play.key);
+              setStatus(`Quant: they played ${nameOf(play.key)}.`);
+            }
+          }
+        }
+      }
     }, 220);
     return () => window.clearInterval(id);
-  }, [live, locked, props.mode]);
+  }, [live, quantOn]);
 
   function clickVideo(e: React.MouseEvent<HTMLVideoElement>) {
     if (props.mode !== "match") return;
@@ -255,8 +330,9 @@ export function LiveShare(props: Props) {
           </div>
         </div>
         <p className="text-sm text-muted-foreground">
-          Clash Royale has no live feed. Share an emulator or a mirrored phone. We watch your four hand slots so you
-          never call your own cards. Tap theirs on the board, or tap a portrait on the video.
+          ClashQuant’s method: detections are not plays. A troop that newly appears on their half, sticks for two
+          frames, then cools down — that’s a play. Share an emulator or mirror. Lock your hand so we call yours. Tap
+          theirs if the model misses.
         </p>
         {error ? <p className="text-sm text-loss">{error}</p> : null}
         <div
@@ -284,13 +360,24 @@ export function LiveShare(props: Props) {
                   </span>
                 </div>
               ))
-            : (
-                <div className="flex size-full items-center justify-center px-4 text-center text-sm text-muted-foreground">
-                  {caps.share
-                    ? "Pick Share window, then choose the Clash Royale emulator or mirror."
-                    : "This browser cannot share a window. Use Chrome on the computer that is mirroring the match."}
-                </div>
-              )}
+            : null}
+          {live
+            ? boxes.map((b, i) => (
+                <div
+                  key={`q-${b.key}-${i}`}
+                  className="pointer-events-none absolute size-4 -translate-x-1/2 -translate-y-1/2 rounded-full border border-loss bg-loss/40"
+                  style={{ left: `${b.x * 100}%`, top: `${b.y * 100}%` }}
+                  title={nameOf(b.key)}
+                />
+              ))
+            : null}
+          {!live ? (
+            <div className="flex size-full items-center justify-center px-4 text-center text-sm text-muted-foreground">
+              {caps.share
+                ? "Pick Share window, then choose the Clash Royale emulator or mirror."
+                : "This browser cannot share a window. Use Chrome on the computer that is mirroring the match."}
+            </div>
+          ) : null}
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {props.mode === "match" ? (
@@ -303,10 +390,18 @@ export function LiveShare(props: Props) {
               Scan this frame
             </Button>
           )}
+          <Button type="button" variant={quantOn ? "default" : "outline"} onClick={() => setQuantOn((v) => !v)} disabled={!live}>
+            Quant {quantOn ? "on" : "off"}
+          </Button>
           {locked ? <Badge variant="win">Hand locked</Badge> : null}
+          {quantOn && live ? <Badge variant="win">GameState</Badge> : null}
+          {roboflowKey && live ? <Badge variant="cyan">{rfBusy ? "YOLO…" : "YOLO"}</Badge> : null}
           {live ? <Badge variant="cyan">{source === "camera" ? "Camera" : "Share"}</Badge> : null}
         </div>
         <p className="text-sm text-muted-foreground">{status}</p>
+        <p className="text-xs text-muted-foreground">
+          Detector credit: ClashQuant / ERA (StormHacks 2025, CC BY 4.0). Default model {roboflowModel || DEFAULT_QUANT_MODEL}. Paste a Roboflow key in Settings to run their YOLO; otherwise we match portraits locally.
+        </p>
       </CardContent>
     </Card>
   );

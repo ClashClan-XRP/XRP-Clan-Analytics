@@ -165,6 +165,40 @@ export function elixirFromBar(img: ImageData): number {
   return Math.max(0, Math.min(10, (mag / tot) * 10));
 }
 
+export function slotMoved(prev: Signature | null, next: Signature, thresh = 12): boolean {
+  if (!prev) return true;
+  return signatureDistance(prev, next) >= thresh;
+}
+
+export function scanHalf(
+  video: HTMLVideoElement,
+  catalog: Map<string, Signature>,
+  half: "them" | "you",
+  rows = 4,
+  cols = 4,
+): DetectionLike[] {
+  const y0 = half === "them" ? 0.04 : 0.58;
+  const y1 = half === "them" ? 0.5 : 0.74;
+  const hits: DetectionLike[] = [];
+  const seen = new Set<string>();
+  const rh = (y1 - y0) / rows;
+  const rw = 1 / cols;
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const rect: RelRect = { x: c * rw + rw * 0.1, y: y0 + r * rh + rh * 0.1, w: rw * 0.8, h: rh * 0.8 };
+      const img = sampleVideo(video, rect);
+      if (!img) continue;
+      const hit = bestMatch(signatureFromImageData(img), catalog, 32);
+      if (!hit || seen.has(hit.key)) continue;
+      seen.add(hit.key);
+      hits.push({ key: hit.key, x: rect.x + rect.w / 2, y: rect.y + rect.h / 2, conf: Math.max(0, 1 - hit.dist / 40) });
+    }
+  }
+  return hits;
+}
+
+export type DetectionLike = { key: string; x: number; y: number; conf: number };
+
 export function scanFrame(
   video: HTMLVideoElement,
   catalog: Map<string, Signature>,

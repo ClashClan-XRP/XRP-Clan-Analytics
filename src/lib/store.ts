@@ -21,6 +21,10 @@ type AppState = {
   toggleHero: (key: string) => void;
   recents: Recent[];
   remember: (r: Recent) => void;
+  roboflowKey: string;
+  setRoboflowKey: (k: string) => void;
+  roboflowModel: string;
+  setRoboflowModel: (k: string) => void;
 };
 
 export const useAppStore = create<AppState>()(
@@ -62,6 +66,10 @@ export const useAppStore = create<AppState>()(
         set({
           recents: [r, ...get().recents.filter((x) => !(x.kind === r.kind && x.tag === r.tag))].slice(0, 8),
         }),
+      roboflowKey: "",
+      setRoboflowKey: (roboflowKey) => set({ roboflowKey }),
+      roboflowModel: "",
+      setRoboflowModel: (roboflowModel) => set({ roboflowModel }),
     }),
     {
       name: "xrp-clan-analytics",
@@ -69,13 +77,18 @@ export const useAppStore = create<AppState>()(
         apiKey: s.apiKey,
         goldBudget: s.goldBudget,
         recents: s.recents,
+        roboflowKey: s.roboflowKey,
+        roboflowModel: s.roboflowModel,
       }),
       merge: (persisted, current) => {
         const p = (persisted ?? {}) as Partial<AppState>;
         return {
           ...current,
           ...p,
+          recents: p.recents ?? current.recents,
           apiKey: p.apiKey?.trim() ? p.apiKey : DEFAULT_API_TOKEN,
+          roboflowKey: p.roboflowKey ?? "",
+          roboflowModel: p.roboflowModel ?? "",
         };
       },
     },

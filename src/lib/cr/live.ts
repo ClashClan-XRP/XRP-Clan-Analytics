@@ -464,6 +464,14 @@ const ALIAS_LIST: Array<{ phrase: string; key: string }> = (() => {
   return rows;
 })();
 
+export function keyFromPhrase(raw: string): string | null {
+  const text = raw.toLowerCase().replace(/[^a-z0-9\s-]/g, " ").replace(/\s+/g, " ").trim();
+  if (!text) return null;
+  const spaced = text.replace(/-/g, " ");
+  const hit = ALIAS_LIST.find((a) => a.phrase === text || a.phrase === spaced);
+  return hit?.key ?? null;
+}
+
 export function parseVoice(raw: string, you: string[], them: string[]): VoiceCommand {
   const text = raw.toLowerCase().replace(/[^a-z0-9\s-]/g, " ").replace(/\s+/g, " ").trim();
   if (!text) return { kind: "unknown", raw };
